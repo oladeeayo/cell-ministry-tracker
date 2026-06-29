@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  phone     String
+  address   String?
+  role      String   @default("E_GROUP_LEADER")
+  createdAt DateTime @default(now())
+
+  zonalLeaderZone Zone?              @relation("ZonalLeader")
+  cellLeaderCell   Cell?              @relation("CellLeader")
+  cellMember       CellMember?        @relation("CellMemberUser")
+}
+
+model Zone {
+  id                  Int      @id @default(autoincrement())
+  zoneNumber          String   @unique
+  zonalLeaderId       Int      @unique
+  zonalLeaderPhone    String
+  zonalLeaderAddress  String
+  createdAt           DateTime @default(now())
+
+  zonalLeader User   @relation("ZonalLeader", fields: [zonalLeaderId], references: [id])
+  cells       Cell[]
+}
+
+model Cell {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  zoneId             Int
+  cellLeaderId       Int      @unique
+  cellLeaderAddress  String
+  cellLeaderPhone    String
+  createdAt          DateTime @default(now())
+
+  zone        Zone         @relation(fields: [zoneId], references: [id])
+  cellLeader  User         @relation("CellLeader", fields: [cellLeaderId], references: [id])
+  members     CellMember[]
+  attendances Attendance[]
+}
+
+model CellMember {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  address   String?
+  role      String   @default("MEMBER")
+  cellId    Int
+  userId    Int?     @unique
+  createdAt DateTime @default(now())
+
+  cell        Cell         @relation(fields: [cellId], references: [id])
+  user        User?        @relation("CellMemberUser", fields: [userId], references: [id])
+  attendances Attendance[]
+}
+
+model Attendance {
+  id           Int      @id @default(autoincrement())
+  cellMemberId Int
+  cellId       Int
+  date         DateTime
+  isPresent    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  cellMember CellMember @relation(fields: [cellMemberId], references: [id])
+  cell       Cell       @relation(fields: [cellId], references: [id])
+
+  @@unique([cellMemberId, date])
+}
