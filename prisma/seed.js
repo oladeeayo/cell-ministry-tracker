@@ -4,13 +4,20 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
+  // Check if already seeded
+  const existingPastor = await prisma.user.findUnique({
+    where: { email: "pastor@church.org" },
+  });
+  if (existingPastor) {
+    console.log("Database already seeded. Skipping.");
+    return;
+  }
+
   const password = await bcrypt.hash("password123", 12);
 
-  // Create Community Pastor
-  const pastor = await prisma.user.upsert({
-    where: { email: "pastor@church.org" },
-    update: {},
-    create: {
+  // Create users first
+  const pastor = await prisma.user.create({
+    data: {
       email: "pastor@church.org",
       password,
       name: "Pastor John",
@@ -19,11 +26,8 @@ async function main() {
     },
   });
 
-  // Create District Leader
-  const districtLeader = await prisma.user.upsert({
-    where: { email: "district@church.org" },
-    update: {},
-    create: {
+  const districtLeader = await prisma.user.create({
+    data: {
       email: "district@church.org",
       password,
       name: "District Leader Mary",
@@ -32,11 +36,8 @@ async function main() {
     },
   });
 
-  // Create Zonal Leader
-  const zonalLeader = await prisma.user.upsert({
-    where: { email: "zonal@church.org" },
-    update: {},
-    create: {
+  const zonalLeader = await prisma.user.create({
+    data: {
       email: "zonal@church.org",
       password,
       name: "Zonal Leader Peter",
@@ -45,23 +46,8 @@ async function main() {
     },
   });
 
-  // Create Zone
-  const zone = await prisma.zone.upsert({
-    where: { zoneNumber: "ZN-001" },
-    update: {},
-    create: {
-      zoneNumber: "ZN-001",
-      zonalLeaderId: zonalLeader.id,
-      zonalLeaderPhone: "+2348010000003",
-      zonalLeaderAddress: "123 Zone Street",
-    },
-  });
-
-  // Create Cell Leader
-  const cellLeader = await prisma.user.upsert({
-    where: { email: "cellleader@church.org" },
-    update: {},
-    create: {
+  const cellLeader = await prisma.user.create({
+    data: {
       email: "cellleader@church.org",
       password,
       name: "Cell Leader Sarah",
@@ -70,24 +56,8 @@ async function main() {
     },
   });
 
-  // Create Cell
-  const cell = await prisma.cell.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      name: "Faith Cell",
-      zoneId: zone.id,
-      cellLeaderId: cellLeader.id,
-      cellLeaderAddress: "456 Cell Avenue",
-      cellLeaderPhone: "+2348010000004",
-    },
-  });
-
-  // Create Asst Cell Leader
-  const asstUser = await prisma.user.upsert({
-    where: { email: "asst@church.org" },
-    update: {},
-    create: {
+  const asstUser = await prisma.user.create({
+    data: {
       email: "asst@church.org",
       password,
       name: "Asst. Leader James",
@@ -96,23 +66,8 @@ async function main() {
     },
   });
 
-  await prisma.cellMember.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      name: "Asst. Leader James",
-      phone: "+2348010000005",
-      role: "ASST_CELL_LEADER",
-      cellId: cell.id,
-      userId: asstUser.id,
-    },
-  });
-
-  // Create E-Group Leader
-  const egroupUser = await prisma.user.upsert({
-    where: { email: "egroup@church.org" },
-    update: {},
-    create: {
+  const egroupUser = await prisma.user.create({
+    data: {
       email: "egroup@church.org",
       password,
       name: "E-Group Leader Grace",
@@ -121,10 +76,40 @@ async function main() {
     },
   });
 
-  await prisma.cellMember.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
+  // Create zone
+  const zone = await prisma.zone.create({
+    data: {
+      zoneNumber: "ZN-001",
+      zonalLeaderId: zonalLeader.id,
+      zonalLeaderPhone: "+2348010000003",
+      zonalLeaderAddress: "123 Zone Street",
+    },
+  });
+
+  // Create cell
+  const cell = await prisma.cell.create({
+    data: {
+      name: "Faith Cell",
+      zoneId: zone.id,
+      cellLeaderId: cellLeader.id,
+      cellLeaderAddress: "456 Cell Avenue",
+      cellLeaderPhone: "+2348010000004",
+    },
+  });
+
+  // Add cell members
+  await prisma.cellMember.create({
+    data: {
+      name: "Asst. Leader James",
+      phone: "+2348010000005",
+      role: "ASST_CELL_LEADER",
+      cellId: cell.id,
+      userId: asstUser.id,
+    },
+  });
+
+  await prisma.cellMember.create({
+    data: {
       name: "E-Group Leader Grace",
       phone: "+2348010000006",
       role: "E_GROUP_LEADER",
@@ -133,15 +118,12 @@ async function main() {
     },
   });
 
-  // Create Cell Members
-  const members = ["David", "Esther", "Samuel", "Ruth", "Joseph"];
-  for (let i = 0; i < members.length; i++) {
-    await prisma.cellMember.upsert({
-      where: { id: i + 3 },
-      update: {},
-      create: {
-        name: members[i],
-        phone: `+234801000010${i}`,
+  const memberNames = ["David", "Esther", "Samuel", "Ruth", "Joseph"];
+  for (const name of memberNames) {
+    await prisma.cellMember.create({
+      data: {
+        name,
+        phone: `+234801000010${memberNames.indexOf(name)}`,
         role: "MEMBER",
         cellId: cell.id,
       },
@@ -149,6 +131,7 @@ async function main() {
   }
 
   console.log("Seed data created successfully!");
+  console.log("");
   console.log("Login credentials (all use password: password123):");
   console.log("  Community Pastor: pastor@church.org");
   console.log("  District Leader:  district@church.org");
