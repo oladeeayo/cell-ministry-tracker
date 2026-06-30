@@ -115,7 +115,7 @@ export default function LoginPage() {
                 <p><span className="font-medium text-slate-600">Pastor:</span> pastor@church.org</p>
                 <p><span className="font-medium text-slate-600">District:</span> district@church.org</p>
                 <p><span className="font-medium text-slate-600">Zonal:</span> zonal1@church.org &ndash; zonal10@church.org</p>
-                <p><span className="font-medium text-slate-600">Cell Leader:</span> cell1_1@church.org &ndash; cell10_4@church.org</p>
+                <p><span className="font-medium text-slate-600">Cell Leader:</span> cellleader@church.org <span className="text-slate-300">or</span> cell1_1@church.org &ndash; cell10_4@church.org</p>
                 <p><span className="font-medium text-slate-600">Asst:</span> asst1_1@church.org &ndash; asst10_4@church.org</p>
                 <p><span className="font-medium text-slate-600">E-Group:</span> egroup1_1@church.org &ndash; egroup10_4@church.org</p>
               </div>

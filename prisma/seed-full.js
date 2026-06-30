@@ -105,6 +105,12 @@ async function main() {
       const egroupUser = await prisma.user.create({ data: { email: `egroup${z + 1}_${c + 1}@church.org`, password, name: `E-Group ${cellName}`, phone: randomPhone(userAccountIdx++), role: "E_GROUP_LEADER" } });
       await prisma.cellMember.create({ data: { name: egroupUser.name, phone: egroupUser.phone, role: "E_GROUP_LEADER", cellId: cell.id, userId: egroupUser.id } });
 
+      // First cell gets a simple alias account
+      if (z === 0 && c === 0) {
+        const aliasUser = await prisma.user.create({ data: { email: "cellleader@church.org", password, name: "Cell Leader General", phone: randomPhone(userAccountIdx++), role: "E_GROUP_LEADER" } });
+        await prisma.cellMember.create({ data: { name: aliasUser.name, phone: aliasUser.phone, role: "E_GROUP_LEADER", cellId: cell.id, userId: aliasUser.id } });
+      }
+
       // Create members in bulk
       const memberCount = 13 + Math.floor(Math.random() * 5);
       const memberData = [];
@@ -148,7 +154,7 @@ async function main() {
   console.log("  Community Pastor: pastor@church.org");
   console.log("  District Leader:  district@church.org");
   console.log("  Zonal Leaders:    zonal1@church.org - zonal10@church.org");
-  console.log("  Cell Leaders:     cell1_1@church.org - cell10_4@church.org");
+  console.log("  Cell Leaders:     cellleader@church.org (or cell1_1@church.org - cell10_4@church.org)");
   console.log("  Asst Leaders:     asst1_1@church.org - asst10_4@church.org");
   console.log("  E-Group Leaders:  egroup1_1@church.org - egroup10_4@church.org");
 }
