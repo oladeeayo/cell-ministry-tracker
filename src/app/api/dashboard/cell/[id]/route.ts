@@ -106,7 +106,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const attendanceRate = totalSundays > 0 ? Math.round((attended / totalSundays) * 100) : 0;
 
     return {
-      ...m,
+      id: m.id, name: m.name, phone: m.phone, role: m.role,
+      isVisitor: m.isVisitor,
+      firstVisitDate: m.firstVisitDate,
       attendance: att,
       attendanceRate,
       consecutiveAbsences,

@@ -121,3 +121,11 @@ body {
   .badge-danger { background: #fef2f2; color: #ef4444; }
   .badge-info { background: #eff6ff; color: #0ea5e9; }
 }
+
+@media print {
+  body { background: white; overflow: visible !important; }
+  .print\:hidden { display: none !important; }
+  .print\:space-y-4 > * + * { margin-top: 1rem !important; }
+  .card, .card-compact { break-inside: avoid; box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+  .card:hover { transform: none !important; }
+}

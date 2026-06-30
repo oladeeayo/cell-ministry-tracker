@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import DateRangePicker from "./DateRangePicker";
+import AttendancePieChart from "./AttendancePieChart";
+import AttendanceCalendar from "./AttendanceCalendar";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 
 interface Props { zoneId: number; userRole: string; }
@@ -38,12 +40,13 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
   useEffect(() => { fetchData(); }, [zoneId, dateRange.from, dateRange.to]);
 
   const filteredCells = cellStats.filter((c) => !search || c.name.toLowerCase().includes(search.toLowerCase()));
+  const printReport = () => window.print();
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="text-slate-400">Loading zone dashboard...</div></div>;
   if (!zone) return <div className="card-compact text-center py-12"><p className="text-slate-400">Zone not found.</p></div>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 print:space-y-4">
       {/* Zone Header */}
       <div className="card relative overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800 text-white !border-0 !p-0">
         <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/4" />
@@ -53,7 +56,13 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
               <h2 className="text-xl sm:text-2xl font-bold truncate pr-4">Zone {zone.zoneNumber}</h2>
               <p className="text-primary-100 text-xs sm:text-sm mt-1 truncate">Zonal Leader: <span className="font-semibold text-white">{zone.zonalLeader?.name || "N/A"}</span></p>
             </div>
-            <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={(f, t) => setDateRange({ from: f, to: t })} />
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap print:hidden">
+              <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={(f, t) => setDateRange({ from: f, to: t })} />
+              <button onClick={printReport} className="btn-secondary !py-1.5 sm:!py-2 !px-2.5 sm:!px-4 !text-[10px] sm:!text-xs bg-white/15 text-white border-white/20 hover:bg-white/25">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                Print
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -85,22 +94,31 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
         </div>
       )}
 
-      {/* Chart */}
-      {weeklyTrend.length > 0 && (
-        <div className="card">
-          <h3 className="text-lg font-bold text-slate-900 mb-1">Attendance Trend</h3>
-          <p className="text-xs text-slate-400 mb-6">Weekly attendance overview</p>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={weeklyTrend.map((w) => ({ name: formatDate(w.date), present: w.present }))}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-              <Line type="monotone" dataKey="present" stroke="#0d9488" strokeWidth={3} dot={{ fill: "#0d9488", r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {weeklyTrend.length > 0 && (
+          <div className="lg:col-span-2 card">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Attendance Trend</h3>
+            <p className="text-xs text-slate-400 mb-6">Weekly attendance overview</p>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={weeklyTrend.map((w) => ({ name: formatDate(w.date), present: w.present }))}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
+                <Line type="monotone" dataKey="present" stroke="#0d9488" strokeWidth={3} dot={{ fill: "#0d9488", r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {stats && (
+          <AttendancePieChart present={stats.presentThisSunday || 0} absent={(stats.totalMembers || 0) - (stats.presentThisSunday || 0)} />
+        )}
+      </div>
+
+      {/* Calendar */}
+      {weeklyTrend.length > 0 && <AttendanceCalendar data={weeklyTrend.map((w: any) => ({ ...w, total: stats?.totalMembers || 0 }))} />}
 
       {/* Cell Table */}
       <div className="card !p-0 overflow-hidden">

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import DateRangePicker from "./DateRangePicker";
+import AttendancePieChart from "./AttendancePieChart";
+import AttendanceCalendar from "./AttendanceCalendar";
+import Link from "next/link";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 
 interface Props { userRole: string; }
@@ -36,18 +38,27 @@ export default function OverviewDashboard({ userRole }: Props) {
   useEffect(() => { fetchData(); }, [dateRange.from, dateRange.to]);
 
   const filteredZones = zones.filter((z) => !search || z.zoneNumber.toString().includes(search) || z.zonalLeader.toLowerCase().includes(search.toLowerCase()));
+  const printReport = () => window.print();
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="text-slate-400">Loading overview...</div></div>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 print:space-y-4">
       {/* Welcome Banner */}
       <div className="card relative overflow-hidden !p-0 !border-0 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white">
         <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-1/3 w-48 h-48 rounded-full bg-white/5 translate-y-1/2" />
         <div className="relative p-6 md:p-10">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Welcome to Cell Ministry</h2>
-          <p className="text-primary-100 text-xs sm:text-sm mt-2 max-w-xl">Track attendance, manage members, and gain insights across all zones and cells in your ministry.</p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Cell Ministry Dashboard</h2>
+              <p className="text-primary-100 text-xs sm:text-sm mt-2 max-w-xl">Track attendance, manage members, and gain insights across all zones and cells.</p>
+            </div>
+            <button onClick={printReport} className="btn-secondary !py-1.5 sm:!py-2 !px-2.5 sm:!px-4 !text-[10px] sm:!text-xs bg-white/15 text-white border-white/20 hover:bg-white/25 shrink-0 print:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+              Print
+            </button>
+          </div>
         </div>
       </div>
 
@@ -61,7 +72,7 @@ export default function OverviewDashboard({ userRole }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
           {[
             { label: "Zones", value: stats.totalZones, icon: "smile", color: "primary" },
-            { label: "Cells", value: stats.totalCells, sub: `${stats.cellsWithSubmission} submitted attendance`, icon: "zap", color: "blue" },
+            { label: "Cells", value: stats.totalCells, sub: `${stats.cellsWithSubmission} submitted`, icon: "zap", color: "blue" },
             { label: "Members", value: stats.totalMembers, sub: `${stats.presentThisSunday} present this Sunday`, icon: "users", color: "amber" },
             { label: "MoM Growth", value: `${(stats.momGrowth || 0) >= 0 ? "+" : ""}${stats.momGrowth}%`, sub: "vs previous month", icon: "trending", color: "green" },
           ].map((kpi, i) => (
@@ -88,12 +99,11 @@ export default function OverviewDashboard({ userRole }: Props) {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Weekly Trend */}
         {weeklyTrend.length > 0 && (
           <div className="card">
-            <h3 className="text-lg font-bold text-slate-900 mb-1">Growth Trajectory</h3>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Growth Trajectory</h3>
             <p className="text-xs text-slate-400 mb-6">4-week attendance trend</p>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={220}>
               <LineChart data={weeklyTrend.map((w) => ({ name: formatDate(w.date), present: w.present }))}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
@@ -105,12 +115,11 @@ export default function OverviewDashboard({ userRole }: Props) {
           </div>
         )}
 
-        {/* Zone Comparison */}
         {zones.length > 0 && (
           <div className="card">
-            <h3 className="text-lg font-bold text-slate-900 mb-1">Zone Comparison</h3>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Zone Comparison</h3>
             <p className="text-xs text-slate-400 mb-6">Present attendance by zone</p>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={zones.map((z) => ({ name: `Zone ${z.zoneNumber}`, present: z.presentThisSunday, rate: z.attendanceRate }))}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
@@ -122,6 +131,14 @@ export default function OverviewDashboard({ userRole }: Props) {
           </div>
         )}
       </div>
+
+      {/* Pie + Calendar */}
+      {stats && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <AttendancePieChart present={stats.presentThisSunday || 0} absent={(stats.totalMembers || 0) - (stats.presentThisSunday || 0)} />
+          {weeklyTrend.length > 0 && <div className="lg:col-span-2"><AttendanceCalendar data={weeklyTrend.map((w: any) => ({ ...w, total: stats.totalMembers || 0 }))} /></div>}
+        </div>
+      )}
 
       {/* Zone Table */}
       <div className="card !p-0 overflow-hidden">

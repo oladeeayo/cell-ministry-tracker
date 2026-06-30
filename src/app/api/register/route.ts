@@ -14,9 +14,11 @@ export async function POST(req: Request) {
       );
     }
 
+    const targetCellId = cellData?.cellId || body.cellId;
+
     // MEMBER role: just create a CellMember, no user account
     if (role === "MEMBER") {
-      if (!cellData?.cellId) {
+      if (!targetCellId) {
         return NextResponse.json(
           { error: "Cell selection is required" },
           { status: 400 }
@@ -28,7 +30,9 @@ export async function POST(req: Request) {
           phone,
           address: address || null,
           role: "MEMBER",
-          cellId: parseInt(cellData.cellId),
+          cellId: parseInt(targetCellId),
+          isVisitor: body.isVisitor || false,
+          firstVisitDate: body.isVisitor ? new Date() : undefined,
         },
       });
       return NextResponse.json(
@@ -89,14 +93,14 @@ export async function POST(req: Request) {
       });
     }
 
-    if (["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(role) && cellData?.cellId) {
+    if (["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(role) && targetCellId) {
       await prisma.cellMember.create({
         data: {
           name,
           phone,
           address: address || null,
           role,
-          cellId: parseInt(cellData.cellId),
+          cellId: parseInt(targetCellId),
           userId: user.id,
         },
       });
