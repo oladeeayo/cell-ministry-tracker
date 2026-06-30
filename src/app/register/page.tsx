@@ -35,6 +35,18 @@ export default function RegisterPage() {
   const [userCellId, setUserCellId] = useState<number | null>(null);
   const [addingMember, setAddingMember] = useState(false);
 
+  const [form, setForm] = useState({
+    email: "", password: "", name: "", phone: "", address: "", role: "",
+    zoneNumber: "", zonalLeaderPhone: "", zonalLeaderAddress: "",
+    cellName: "", cellZoneId: "", cellLeaderAddress: "", cellLeaderPhone: "",
+    cellId: "",
+  });
+
+  useEffect(() => {
+    if (form.role === "CELL_LEADER") fetch("/api/zones").then((r) => r.json()).then(setZones).catch(() => {});
+    if (["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(form.role)) fetch("/api/cells").then((r) => r.json()).then(setCells).catch(() => {});
+  }, [form.role]);
+
   useEffect(() => {
     if (status === "authenticated") {
       const user = session?.user as any;
@@ -51,18 +63,6 @@ export default function RegisterPage() {
   }, [status, session, router]);
 
   if (status === "authenticated" && !addingMember) return null;
-
-  const [form, setForm] = useState({
-    email: "", password: "", name: "", phone: "", address: "", role: "",
-    zoneNumber: "", zonalLeaderPhone: "", zonalLeaderAddress: "",
-    cellName: "", cellZoneId: "", cellLeaderAddress: "", cellLeaderPhone: "",
-    cellId: "",
-  });
-
-  useEffect(() => {
-    if (form.role === "CELL_LEADER") fetch("/api/zones").then((r) => r.json()).then(setZones).catch(() => {});
-    if (["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(form.role)) fetch("/api/cells").then((r) => r.json()).then(setCells).catch(() => {});
-  }, [form.role]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
