@@ -80,92 +80,161 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
 
   const countPresent = (d: string) => members.filter((m) => m.attendance[d]?.present).length;
 
-  const downloadAttendanceCSV = () => {
+  const downloadCSVAction = () => {
     const rows = [["Member", "Role", "Phone", ...sundays.map(formatDateShort), "Attendance Rate"]];
     members.forEach((m) => rows.push([m.name, m.role, m.phone, ...sundays.map((s) => m.attendance[s]?.present ? "Present" : "Absent"), `${m.attendanceRate || 0}%`]));
     downloadCSV(rows, `attendance-cell-${cellId}.csv`);
   };
 
-  if (loading) return <div className="text-center py-8 text-gray-400">Loading attendance sheet...</div>;
+  if (loading) return <div className="flex items-center justify-center py-12"><div className="text-slate-400">Loading attendance sheet...</div></div>;
 
   if (members.length === 0) {
-    return <div className="text-center py-12"><p className="text-gray-400 mb-4">No members in this cell.</p>{onAddMember && <button onClick={onAddMember} className="px-4 py-2 bg-primary-700 text-white rounded-lg text-sm font-medium hover:bg-primary-800 transition">+ Add First Member</button>}</div>;
+    return (
+      <div className="card-compact text-center py-12">
+        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <p className="text-slate-500 font-medium mb-4">No members in this cell.</p>
+        {onAddMember && <button onClick={onAddMember} className="btn-primary">+ Add First Member</button>}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      {saved && <div className="bg-green-50 text-green-700 px-4 py-2 rounded-lg text-sm">Attendance saved successfully!</div>}
+      {saved && (
+        <div className="px-5 py-3 bg-green-50 border border-green-100 text-green-700 rounded-2xl text-sm font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Attendance saved successfully!
+        </div>
+      )}
 
-      {/* Active Sunday */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h3 className="font-semibold text-gray-800">Attendance — {formatDate(activeSunday)}</h3>
-            <p className="text-xs text-gray-400 mt-0.5">{isEditable ? "Mark who was present and click Save." : "View-only. Previous records are locked."}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Active Sunday Table */}
+        <div className="lg:col-span-3 card !p-0 overflow-hidden">
+          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Attendance — {formatDate(activeSunday)}</h3>
+              <p className="text-xs text-slate-400 mt-0.5">{isEditable ? "Toggle status for each member and save." : "Previous records are locked (read-only)."}</p>
+            </div>
+            {isEditable && (
+              <button onClick={saveAttendance} disabled={saving} className="btn-primary">
+                {saving ? (
+                  <span className="flex items-center gap-2"><svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>Saving...</span>
+                ) : "Save Attendance"}
+              </button>
+            )}
           </div>
-          {isEditable && <button onClick={saveAttendance} disabled={saving} className="px-4 py-2 bg-primary-700 text-white rounded-lg text-sm font-medium hover:bg-primary-800 disabled:opacity-50 transition">{saving ? "Saving..." : "Save"}</button>}
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Member</th>
-                <th className="text-left px-3 py-3 font-medium text-gray-500">Role</th>
-                <th className="text-center px-3 py-3 font-medium text-gray-500">Status</th>
-                {isEditable && <th className="text-left px-3 py-3 font-medium text-gray-500">Note</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((m) => {
-                const a = m.attendance[activeSunday];
-                const isPresent = a?.present || false;
-                return (
-                  <tr key={m.id} className="border-t border-gray-100 hover:bg-gray-50/50">
-                    <td className="px-4 py-3 font-medium text-gray-800">{m.name}</td>
-                    <td className="px-3 py-3"><span className="bg-gray-100 px-2 py-0.5 rounded text-xs text-gray-500">{m.role === "MEMBER" ? "Member" : m.role === "ASST_CELL_LEADER" ? "Asst." : m.role === "E_GROUP_LEADER" ? "E-Group" : m.role}</span></td>
-                    <td className="px-3 py-3 text-center">
-                      {isEditable ? (
-                        <label className="inline-flex items-center justify-center w-8 h-8 cursor-pointer"><input type="checkbox" checked={isPresent} onChange={() => toggleAttendance(m.id, isPresent)} className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 cursor-pointer" /></label>
-                      ) : (
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${isPresent ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>{isPresent ? "Present" : "Absent"}</span>
-                      )}
-                    </td>
-                    {isEditable && (
-                      <td className="px-3 py-3">
-                        <input placeholder="Optional note..." value={notes[`${m.id}-${activeSunday}`] ?? a?.note ?? ""} onChange={(e) => setNotes({ ...notes, [`${m.id}-${activeSunday}`]: e.target.value })} className="w-full px-2 py-1 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-primary-500 outline-none" />
-                      </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-wrap gap-3">
-        {onAddMember && <button onClick={onAddMember} className="px-4 py-2 border border-primary-300 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-50 transition">+ Add Member</button>}
-        <button onClick={downloadAttendanceCSV} className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Download CSV</button>
-      </div>
-
-      {/* Past Sundays */}
-      {pastSundays.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100"><h3 className="font-semibold text-gray-800">Past Records (Read Only)</h3></div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-gray-50"><th className="text-left px-4 py-3 font-medium text-gray-600">Sunday</th><th className="text-center px-3 py-3 font-medium text-gray-500">Present</th><th className="text-center px-3 py-3 font-medium text-gray-500">Absent</th><th className="text-center px-3 py-3 font-medium text-gray-500">Total</th><th className="text-center px-3 py-3 font-medium text-gray-500">%</th></tr></thead>
+              <thead>
+                <tr className="bg-slate-50">
+                  <th className="text-left px-6 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">Member</th>
+                  <th className="text-left px-3 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">Role</th>
+                  <th className="text-center px-3 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">Status</th>
+                  {isEditable && <th className="text-left px-3 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">Note</th>}
+                </tr>
+              </thead>
               <tbody>
-                {pastSundays.map((s) => {
-                  const present = countPresent(s); const total = members.length;
-                  return <tr key={s} className="border-t border-gray-100"><td className="px-4 py-3 font-medium text-gray-600">{formatDateShort(s)}</td><td className="px-3 py-3 text-center text-green-600 font-medium">{present}</td><td className="px-3 py-3 text-center text-red-500">{total - present}</td><td className="px-3 py-3 text-center text-gray-700">{total}</td><td className="px-3 py-3 text-center text-gray-700">{total > 0 ? Math.round((present / total) * 100) : 0}%</td></tr>;
+                {members.map((m) => {
+                  const a = m.attendance[activeSunday];
+                  const isPresent = a?.present || false;
+                  return (
+                    <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-slate-900">{m.name}</p>
+                        {m.phone && <p className="text-xs text-slate-400 mt-0.5">{m.phone}</p>}
+                      </td>
+                      <td className="px-3 py-4">
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-semibold badge-neutral">
+                          {m.role === "MEMBER" ? "Member" : m.role === "ASST_CELL_LEADER" ? "Asst." : m.role === "E_GROUP_LEADER" ? "E-Group" : m.role}
+                        </span>
+                      </td>
+                      <td className="px-3 py-4 text-center">
+                        {isEditable ? (
+                          <label className="inline-flex items-center cursor-pointer">
+                            <div className="relative">
+                              <input type="checkbox" checked={isPresent} onChange={() => toggleAttendance(m.id, isPresent)} className="sr-only peer" />
+                              <div className={`w-12 h-6 rounded-full transition-colors relative ${isPresent ? "bg-primary-600" : "bg-slate-200"}`}>
+                                <div className="w-5 h-5 bg-white rounded-full shadow-sm transition-all absolute top-0.5" style={{ left: isPresent ? "26px" : "2px" }} />
+                              </div>
+                            </div>
+                            <span className={`ml-2 text-xs font-semibold ${isPresent ? "text-primary-600" : "text-slate-400"}`}>
+                              {isPresent ? "Present" : "Absent"}
+                            </span>
+                          </label>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold ${
+                            isPresent ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isPresent ? "bg-green-500" : "bg-slate-400"}`} />
+                            {isPresent ? "Present" : "Absent"}
+                          </span>
+                        )}
+                      </td>
+                      {isEditable && (
+                        <td className="px-3 py-4">
+                          <input placeholder="Optional note..." value={notes[`${m.id}-${activeSunday}`] ?? a?.note ?? ""} onChange={(e) => setNotes({ ...notes, [`${m.id}-${activeSunday}`]: e.target.value })} className="form-input !py-1.5 !px-3 text-xs" />
+                        </td>
+                      )}
+                    </tr>
+                  );
                 })}
               </tbody>
             </table>
           </div>
         </div>
-      )}
+
+        {/* Sidebar: Summary + History */}
+        <div className="space-y-4">
+          {/* Live Summary */}
+          <div className="bg-slate-900 rounded-3xl p-6 text-white">
+            <h4 className="text-sm font-semibold text-slate-300 mb-4">Live Summary</h4>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-400">Total Members</span>
+                <span className="font-bold">{members.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-400">Present</span>
+                <span className="font-bold text-green-400">{countPresent(activeSunday)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-400">Absent</span>
+                <span className="font-bold text-red-400">{members.length - countPresent(activeSunday)}</span>
+              </div>
+              <div className="border-t border-slate-700 pt-3 flex items-center justify-between">
+                <span className="text-sm text-slate-400">Rate</span>
+                <span className="font-bold text-primary-400">{members.length > 0 ? Math.round((countPresent(activeSunday) / members.length) * 100) : 0}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Past History */}
+          {pastSundays.length > 0 && (
+            <div className="card-compact !p-4">
+              <h4 className="text-sm font-bold text-slate-800 mb-3">Recent History</h4>
+              <div className="space-y-2">
+                {pastSundays.slice(-4).reverse().map((s) => {
+                  const present = countPresent(s); const total = members.length;
+                  return (
+                    <div key={s} className="flex items-center justify-between py-1.5">
+                      <span className="text-xs text-slate-500">{formatDateShort(s)}</span>
+                      <span className={`text-xs font-semibold ${present > 0 ? "text-green-600" : "text-slate-400"}`}>
+                        {present}/{total}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <button onClick={downloadCSVAction} className="btn-secondary w-full mt-3 !py-2 !text-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                Download CSV
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
