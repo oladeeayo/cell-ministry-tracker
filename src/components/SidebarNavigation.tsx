@@ -23,7 +23,7 @@ const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard", roles: ["COMMUNITY_PASTOR", "DISTRICT_LEADER", "ZONAL_LEADER", "CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"] },
   { label: "Attendance", href: "/dashboard?tab=attendance", icon: "ClipboardCheck", roles: ["CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"] },
   { label: "Add Member", href: "/register", icon: "UserPlus", roles: ["CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"] },
-  { label: "Analytics", href: "/dashboard?tab=analytics", icon: "BarChart3", roles: ["COMMUNITY_PASTOR", "DISTRICT_LEADER", "ZONAL_LEADER", "CELL_LEADER"] },
+  { label: "Analytics", href: "/analytics", icon: "BarChart3", roles: ["COMMUNITY_PASTOR", "DISTRICT_LEADER", "ZONAL_LEADER", "CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"] },
 ];
 
 const supportItems = [
@@ -45,8 +45,10 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export default function SidebarNavigation({ userRole, userName, isOpen, onClose }: Props) {
   const pathname = usePathname() || "";
   const isActive = (href: string) => {
-    if (href === "/dashboard") return pathname === "/dashboard" && !pathname.includes("?");
-    return pathname.startsWith(href.split("?")[0]);
+    if (href === "/dashboard") return pathname === "/dashboard";
+    if (href === "/register") return pathname === "/register";
+    if (href === "/analytics") return pathname === "/analytics";
+    return pathname.startsWith(href);
   };
 
   return (

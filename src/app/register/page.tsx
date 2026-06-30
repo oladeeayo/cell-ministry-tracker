@@ -10,7 +10,6 @@ const ROLES = [
   { value: "CELL_LEADER", label: "Cell Leader", icon: "UserCheck", desc: "Lead a cell group" },
   { value: "ASST_CELL_LEADER", label: "Asst. Cell Leader", icon: "UserPlus", desc: "Support a cell leader" },
   { value: "E_GROUP_LEADER", label: "E-Group Leader", icon: "Heart", desc: "Lead an e-group" },
-  { value: "MEMBER", label: "Cell Member", icon: "User", desc: "Regular cell member" },
 ];
 
 const RoleIcon = ({ name }: { name: string }) => {
@@ -33,11 +32,25 @@ export default function RegisterPage() {
   const [zones, setZones] = useState<any[]>([]);
   const [cells, setCells] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (status === "authenticated") router.push("/dashboard");
-  }, [status, router]);
+  const [userCellId, setUserCellId] = useState<number | null>(null);
+  const [addingMember, setAddingMember] = useState(false);
 
-  if (status === "authenticated") return null;
+  useEffect(() => {
+    if (status === "authenticated") {
+      const user = session?.user as any;
+      const isCellLeader = ["CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(user?.role);
+      if (isCellLeader) {
+        fetch(`/api/user-meta?userId=${user.id}`).then((r) => r.json()).then((meta) => {
+          if (meta.cellId) setUserCellId(meta.cellId);
+        });
+        setAddingMember(true);
+      } else {
+        router.push("/dashboard");
+      }
+    }
+  }, [status, session, router]);
+
+  if (status === "authenticated" && !addingMember) return null;
 
   const [form, setForm] = useState({
     email: "", password: "", name: "", phone: "", address: "", role: "",
@@ -48,7 +61,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (form.role === "CELL_LEADER") fetch("/api/zones").then((r) => r.json()).then(setZones).catch(() => {});
-    if (["ASST_CELL_LEADER", "E_GROUP_LEADER", "MEMBER"].includes(form.role)) fetch("/api/cells").then((r) => r.json()).then(setCells).catch(() => {});
+    if (["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(form.role)) fetch("/api/cells").then((r) => r.json()).then(setCells).catch(() => {});
   }, [form.role]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -124,7 +137,48 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {step === 1 && (
+            {addingMember ? (
+              <div className="space-y-5">
+                <h3 className="text-lg font-bold text-slate-900">Add New Member</h3>
+                <p className="text-xs text-slate-500">Add a regular member to your cell. Members don't need login accounts.</p>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Full Name *</label>
+                  <input name="name" required className="form-input" placeholder="Enter member name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
+                  <input name="phone" className="form-input" placeholder="+234 XXX XXX XXXX" value={form.phone} onChange={handleChange} />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Address</label>
+                  <input name="address" className="form-input" placeholder="Optional" value={form.address} onChange={handleChange} />
+                </div>
+                <div className="pt-2">
+                  <button onClick={async () => {
+                    if (!form.name.trim()) return;
+                    setLoading(true);
+                    try {
+                      const res = await fetch("/api/register", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name: form.name, phone: form.phone, address: form.address, role: "MEMBER", cellId: String(userCellId) }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) { setError(data.error || "Failed to add member"); setLoading(false); return; }
+                      setForm({ ...form, name: "", phone: "", address: "" });
+                      setError("");
+                    } catch { setError("Network error"); }
+                    setLoading(false);
+                  }} disabled={loading || !form.name.trim()} className="btn-primary w-full">
+                    {loading ? "Adding..." : "Add Member"}
+                  </button>
+                </div>
+                {error && <div className="px-4 py-3 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-medium">{error}</div>}
+                <p className="text-center text-sm text-slate-500 pt-2">
+                  <Link href="/dashboard" className="text-primary-600 font-semibold hover:text-primary-700 transition">Back to Dashboard</Link>
+                </p>
+              </div>
+            ) : step === 1 && (
               <div className="space-y-5">
                 <label className="block text-sm font-bold text-slate-700">Select Role</label>
                 <div className="grid gap-3">
@@ -220,7 +274,7 @@ export default function RegisterPage() {
                   </>
                 )}
 
-                {["ASST_CELL_LEADER", "E_GROUP_LEADER", "MEMBER"].includes(form.role) && (
+                {["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(form.role) && (
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1.5">Cell *</label>
                     <select name="cellId" required className="form-select" value={form.cellId} onChange={handleChange}>

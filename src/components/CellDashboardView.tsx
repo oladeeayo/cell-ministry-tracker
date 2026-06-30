@@ -121,48 +121,51 @@ export default function CellDashboardView({ userRole, cells, defaultCellId }: Pr
       )}
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {weeklyTrend.length > 0 && (
-          <div className="lg:col-span-2 card">
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Attendance Trend</h3>
-            <p className="text-xs text-slate-400 mb-6">Weekly attendance for this cell</p>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={weeklyTrend.map((w) => ({ name: formatDate(w.date), present: w.present }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-                <Line type="monotone" dataKey="present" stroke="#0d9488" strokeWidth={3} dot={{ fill: "#0d9488", r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+      {weeklyTrend.length > 0 && (
+        <div className="card">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Attendance Trend</h3>
+          <p className="text-xs text-slate-400 mb-6">Weekly attendance for this cell</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={weeklyTrend.map((w) => ({ name: formatDate(w.date), present: w.present }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
+              <Line type="monotone" dataKey="present" stroke="#0d9488" strokeWidth={3} dot={{ fill: "#0d9488", r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
+      {/* Pie + Calendar + At-Risk */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {members.length > 0 && (
           <AttendancePieChart
             present={members.filter((m: any) => m.attendance?.[sundays[sundays.length - 1]]?.present).length}
             absent={members.filter((m: any) => !m.attendance?.[sundays[sundays.length - 1]]?.present).length}
           />
         )}
-      </div>
-
-      {/* Calendar + At-Risk */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {calendarData.length > 0 && <div className="lg:col-span-2"><AttendanceCalendar data={calendarData} /></div>}
+        {calendarData.length > 0 && <div className="lg:col-span-1"><AttendanceCalendar data={calendarData} /></div>}
         {atRiskMembers.length > 0 && (
           <div className="card-compact !p-4">
-            <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              At-Risk Members ({atRiskMembers.length})
-            </h4>
-            <div className="space-y-2">
-              {atRiskMembers.slice(0, 10).map((m: any) => (
-                <div key={m.id} className="flex items-center justify-between py-1.5">
-                  <span className="text-xs text-slate-700 truncate max-w-[140px]">{m.name}</span>
-                  <span className="text-xs font-semibold text-red-500">{m.consecutiveAbsences} absent</span>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                At-Risk ({atRiskMembers.length})
+              </h4>
+              <div className="group relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-slate-900 text-white text-xs rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">Members with 3 or more consecutive unexcused absences. These members may be disengaging and need pastoral follow-up.</div>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              {atRiskMembers.slice(0, 8).map((m: any) => (
+                <div key={m.id} className="flex items-center justify-between py-1.5 border-b border-red-50 last:border-0">
+                  <span className="text-xs text-slate-700 truncate max-w-[120px]">{m.name}</span>
+                  <span className="text-xs font-semibold text-red-500 shrink-0 ml-2">{m.consecutiveAbsences} absences</span>
                 </div>
               ))}
-              {atRiskMembers.length > 10 && <p className="text-xs text-slate-400 text-center pt-1">+{atRiskMembers.length - 10} more</p>}
+              {atRiskMembers.length > 8 && <p className="text-xs text-slate-400 text-center pt-2">+{atRiskMembers.length - 8} more</p>}
             </div>
           </div>
         )}
@@ -230,7 +233,6 @@ function AddMemberForm({ cellId, onDone }: { cellId: number; onDone: () => void 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [role, setRole] = useState("MEMBER");
   const [isVisitor, setIsVisitor] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -242,7 +244,7 @@ function AddMemberForm({ cellId, onDone }: { cellId: number; onDone: () => void 
       await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, address, role, cellId: String(cellId), skipAccount: role === "MEMBER", isVisitor: role === "MEMBER" ? isVisitor : false }),
+        body: JSON.stringify({ name, phone, address, role: "MEMBER", cellId: String(cellId), isVisitor }),
       });
       onDone();
     } catch (e) { console.error(e); }
@@ -263,20 +265,10 @@ function AddMemberForm({ cellId, onDone }: { cellId: number; onDone: () => void 
         <label className="block text-sm font-semibold text-slate-700 mb-1.5">Address</label>
         <input placeholder="Optional" value={address} onChange={(e) => setAddress(e.target.value)} className="form-input" />
       </div>
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Role</label>
-        <select value={role} onChange={(e) => setRole(e.target.value)} className="form-select">
-          <option value="MEMBER">Member</option>
-          <option value="ASST_CELL_LEADER">Asst. Cell Leader</option>
-          <option value="E_GROUP_LEADER">E-Group Leader</option>
-        </select>
-      </div>
-      {role === "MEMBER" && (
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" checked={isVisitor} onChange={(e) => setIsVisitor(e.target.checked)} className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-          <span className="text-sm text-slate-700">Mark as visitor</span>
-        </label>
-      )}
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" checked={isVisitor} onChange={(e) => setIsVisitor(e.target.checked)} className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
+        <span className="text-sm text-slate-700">Mark as visitor</span>
+      </label>
       <p className="text-xs text-slate-400">Members don't need login accounts.</p>
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={submitting || !name.trim()} className="btn-primary flex-1">

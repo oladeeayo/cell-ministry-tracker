@@ -95,30 +95,29 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
       )}
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {weeklyTrend.length > 0 && (
-          <div className="lg:col-span-2 card">
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Attendance Trend</h3>
-            <p className="text-xs text-slate-400 mb-6">Weekly attendance overview</p>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={weeklyTrend.map((w) => ({ name: formatDate(w.date), present: w.present }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-                <Line type="monotone" dataKey="present" stroke="#0d9488" strokeWidth={3} dot={{ fill: "#0d9488", r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+      {weeklyTrend.length > 0 && (
+        <div className="card">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Attendance Trend</h3>
+          <p className="text-xs text-slate-400 mb-6">Weekly attendance overview</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={weeklyTrend.map((w) => ({ name: formatDate(w.date), present: w.present }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
+              <Line type="monotone" dataKey="present" stroke="#0d9488" strokeWidth={3} dot={{ fill: "#0d9488", r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
+      {/* Pie + Calendar side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {stats && (
           <AttendancePieChart present={stats.presentThisSunday || 0} absent={(stats.totalMembers || 0) - (stats.presentThisSunday || 0)} />
         )}
+        {weeklyTrend.length > 0 && <AttendanceCalendar data={weeklyTrend.map((w: any) => ({ ...w, total: stats?.totalMembers || 0 }))} />}
       </div>
-
-      {/* Calendar */}
-      {weeklyTrend.length > 0 && <AttendanceCalendar data={weeklyTrend.map((w: any) => ({ ...w, total: stats?.totalMembers || 0 }))} />}
 
       {/* Cell Table */}
       <div className="card !p-0 overflow-hidden">
@@ -144,7 +143,7 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
                   <td className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 z-10 bg-white sm:static sm:z-auto">
                     <Link href={`/dashboard?cell=${c.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">{c.name}</Link>
                   </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none sticky left-[75px] z-10 bg-white sm:static sm:z-auto">{c.leaderName}</td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm whitespace-nowrap overflow-visible max-w-none sticky left-[75px] z-10 bg-white sm:static sm:z-auto">{c.leaderName}</td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{c.totalMembers}</span></td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-primary-600 text-xs sm:text-sm">{c.presentThisSunday}</span></td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-700 text-xs sm:text-sm">{c.attendanceInRange}</span></td>

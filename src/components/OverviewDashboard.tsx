@@ -134,9 +134,9 @@ export default function OverviewDashboard({ userRole }: Props) {
 
       {/* Pie + Calendar */}
       {stats && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <AttendancePieChart present={stats.presentThisSunday || 0} absent={(stats.totalMembers || 0) - (stats.presentThisSunday || 0)} />
-          {weeklyTrend.length > 0 && <div className="lg:col-span-2"><AttendanceCalendar data={weeklyTrend.map((w: any) => ({ ...w, total: stats.totalMembers || 0 }))} /></div>}
+          {weeklyTrend.length > 0 && <AttendanceCalendar data={weeklyTrend.map((w: any) => ({ ...w, total: stats.totalMembers || 0 }))} />}
         </div>
       )}
 
@@ -164,7 +164,7 @@ export default function OverviewDashboard({ userRole }: Props) {
                   <td className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 z-10 bg-white sm:static sm:z-auto">
                     <Link href={`/dashboard?zone=${z.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">Zone {z.zoneNumber}</Link>
                   </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none sticky left-[80px] z-10 bg-white sm:static sm:z-auto">{z.zonalLeader}</td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm whitespace-nowrap sticky left-[80px] z-10 bg-white sm:static sm:z-auto">{z.zonalLeader}</td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalCells}</span></td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalMembers}</span></td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-primary-600 text-xs sm:text-sm">{z.presentThisSunday}</span></td>
