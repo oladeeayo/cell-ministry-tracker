@@ -41,7 +41,7 @@ function Icon({ name, className }: { name: string; className?: string }) {
 }
 
 export default function SidebarNavigation({ userRole, userName }: Props) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard" && !pathname.includes("?");
     return pathname.startsWith(href.split("?")[0]);
