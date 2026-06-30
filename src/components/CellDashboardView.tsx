@@ -61,11 +61,11 @@ export default function CellDashboardView({ userRole, cells, defaultCellId }: Pr
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap">
           <select
             value={cellId}
             onChange={(e) => setCellId(parseInt(e.target.value))}
-            className="form-select !min-w-0 flex-1 sm:flex-none text-xs sm:text-sm"
+            className="form-select !min-w-0 !w-auto !max-w-[110px] sm:!max-w-none sm:!w-auto text-[10px] sm:text-sm"
           >
             {cells.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>

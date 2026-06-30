@@ -152,14 +152,9 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
                       </td>
                       <td className="px-2 sm:px-3 py-3 sm:py-4 text-center">
                         {isEditable ? (
-                          <label className="inline-flex items-center cursor-pointer">
-                            <div className="relative">
-                              <input type="checkbox" checked={isPresent} onChange={() => toggleAttendance(m.id, isPresent)} className="sr-only peer" />
-                              <div className={`w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors relative ${isPresent ? "bg-primary-600" : "bg-slate-200"}`}>
-                                <div className="w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-all absolute top-0.5" style={{ left: isPresent ? "calc(100% - 18px)" : "2px" }} />
-                              </div>
-                            </div>
-                            <span className={`ml-1.5 sm:ml-2 text-[10px] sm:text-xs font-semibold ${isPresent ? "text-primary-600" : "text-slate-400"}`}>
+                          <label className="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={isPresent} onChange={() => toggleAttendance(m.id, isPresent)} className="w-4 h-4 sm:w-5 sm:h-5 rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer" />
+                            <span className={`text-[10px] sm:text-xs font-semibold ${isPresent ? "text-primary-600" : "text-slate-400"}`}>
                               {isPresent ? "Present" : "Absent"}
                             </span>
                           </label>

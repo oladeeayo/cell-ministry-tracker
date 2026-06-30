@@ -13,6 +13,7 @@ body {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   background: var(--background);
   color: #1e293b;
+  overflow-x: hidden;
 }
 
 @layer base {
