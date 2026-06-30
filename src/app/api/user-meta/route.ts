@@ -16,19 +16,35 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "userId required" }, { status: 400 });
   }
 
+  const uid = parseInt(userId);
+
+  // Try CellMember lookup first (ASST_CELL_LEADER, E_GROUP_LEADER)
   const cellMember = await prisma.cellMember.findUnique({
-    where: { userId: parseInt(userId) },
+    where: { userId: uid },
     select: { cellId: true, role: true },
   });
 
-  if (!cellMember) {
-    return NextResponse.json({ cellId: null, role: null, cells: [] });
+  if (cellMember) {
+    const cells = await prisma.cell.findMany({
+      where: { id: cellMember.cellId },
+      select: { id: true, name: true, zoneId: true },
+    });
+    return NextResponse.json({ cellId: cellMember.cellId, role: cellMember.role, cells });
   }
 
-  const cells = await prisma.cell.findMany({
-    where: { id: cellMember.cellId },
+  // Try Cell lookup (CELL_LEADER links via cellLeaderId)
+  const cell = await prisma.cell.findFirst({
+    where: { cellLeaderId: uid },
     select: { id: true, name: true, zoneId: true },
   });
 
-  return NextResponse.json({ cellId: cellMember.cellId, role: cellMember.role, cells });
+  if (cell) {
+    return NextResponse.json({
+      cellId: cell.id,
+      role: "CELL_LEADER",
+      cells: [{ id: cell.id, name: cell.name, zoneId: cell.zoneId }],
+    });
+  }
+
+  return NextResponse.json({ cellId: null, role: null, cells: [] });
 }

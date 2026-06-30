@@ -89,8 +89,8 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-50">
-              {[{ label: "Name", align: "text-left" }, { label: "Phone", align: "text-left" }, { label: "Role", align: "text-left" }, { label: "Att.", align: "text-center" }, { label: "Abs.", align: "text-center" }, { label: "Actions", align: "text-left" }].map((h) => (
-                <th key={h.label} className={`${h.align} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
+              {[{ label: "Name", align: "text-left", sticky: "sticky left-0 z-10 bg-slate-50" }, { label: "Phone", align: "text-left", sticky: "sticky left-[120px] z-10 bg-slate-50" }, { label: "Role", align: "text-left", sticky: "" }, { label: "Att.", align: "text-center", sticky: "" }, { label: "Abs.", align: "text-center", sticky: "" }, { label: "Actions", align: "text-left", sticky: "" }].map((h) => (
+                <th key={h.label} className={`${h.align} ${h.sticky} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
               ))}
             </tr>
           </thead>
@@ -116,8 +116,8 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
                   </>
                 ) : (
                   <>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-slate-900 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">{m.name}</td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-500 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{m.phone || "—"}</td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-slate-900 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none sticky left-0 z-10 bg-white sm:static sm:z-auto">{m.name}</td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-500 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none sticky left-[120px] z-10 bg-white sm:static sm:z-auto">{m.phone || "—"}</td>
                     <td className="px-3 sm:px-6 py-3 sm:py-4">
                       <span className="px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-semibold badge-neutral whitespace-nowrap">
                         {m.role === "MEMBER" ? "Member" : m.role === "ASST_CELL_LEADER" ? "Asst." : "E-Group"}

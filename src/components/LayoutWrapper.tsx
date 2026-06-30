@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import SidebarNavigation from "./SidebarNavigation";
 import TopHeader from "./TopHeader";
@@ -14,11 +14,23 @@ interface Props {
 export default function LayoutWrapper({ children, pageTitle }: Props) {
   const { data: session } = useSession();
   const user = session?.user as any;
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [isMobile]);
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* Sidebar */}
       <SidebarNavigation
         userRole={user?.role}
         userName={user?.name}
@@ -26,7 +38,6 @@ export default function LayoutWrapper({ children, pageTitle }: Props) {
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Backdrop overlay for mobile */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -34,8 +45,7 @@ export default function LayoutWrapper({ children, pageTitle }: Props) {
         />
       )}
 
-      {/* Main content area */}
-      <div className="lg:ml-72 flex flex-col min-h-screen transition-all duration-300">
+      <div className={`flex flex-col min-h-screen transition-all duration-300 ${sidebarOpen ? "lg:ml-72" : "lg:ml-0"}`}>
         <TopHeader
           pageTitle={pageTitle}
           userName={user?.name}

@@ -147,6 +147,10 @@ async function main() {
   console.log("Login credentials (password: password123):");
   console.log("  Community Pastor: pastor@church.org");
   console.log("  District Leader:  district@church.org");
+  console.log("  Zonal Leaders:    zonal1@church.org - zonal10@church.org");
+  console.log("  Cell Leaders:     cell1_1@church.org - cell10_4@church.org");
+  console.log("  Asst Leaders:     asst1_1@church.org - asst10_4@church.org");
+  console.log("  E-Group Leaders:  egroup1_1@church.org - egroup10_4@church.org");
 }
 
 main().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());

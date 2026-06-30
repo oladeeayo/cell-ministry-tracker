@@ -143,18 +143,18 @@ export default function OverviewDashboard({ userRole }: Props) {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50">
-                {[{ label: "Zone", align: "text-left" }, { label: "Leader", align: "text-left" }, { label: "Cells", align: "text-center" }, { label: "Members", align: "text-center" }, { label: "Sunday", align: "text-center" }, { label: "Att.", align: "text-center" }, { label: "Rate", align: "text-center" }].map((h) => (
-                  <th key={h.label} className={`${h.align} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
+                {[{ label: "Zone", align: "text-left", sticky: "sticky left-0 z-10 bg-slate-50" }, { label: "Leader", align: "text-left", sticky: "sticky left-[100px] z-10 bg-slate-50" }, { label: "Cells", align: "text-center", sticky: "" }, { label: "Members", align: "text-center", sticky: "" }, { label: "Sunday", align: "text-center", sticky: "" }, { label: "Att.", align: "text-center", sticky: "" }, { label: "Rate", align: "text-center", sticky: "" }].map((h) => (
+                  <th key={h.label} className={`${h.align} ${h.sticky} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filteredZones.map((z: any) => (
                 <tr key={z.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
-                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 z-10 bg-white sm:static sm:z-auto">
                     <Link href={`/dashboard?zone=${z.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">Zone {z.zoneNumber}</Link>
                   </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{z.zonalLeader}</td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none sticky left-[80px] z-10 bg-white sm:static sm:z-auto">{z.zonalLeader}</td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalCells}</span></td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalMembers}</span></td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-primary-600 text-xs sm:text-sm">{z.presentThisSunday}</span></td>

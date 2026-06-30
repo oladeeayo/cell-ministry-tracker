@@ -109,6 +109,18 @@ export default function LoginPage() {
               ) : "Sign In"}
             </button>
 
+            <details className="text-xs text-slate-400 mt-4">
+              <summary className="cursor-pointer font-medium text-slate-500 hover:text-slate-700">Test credentials (password: <code className="font-mono bg-slate-100 px-1 rounded">password123</code>)</summary>
+              <div className="mt-2 space-y-1 leading-relaxed">
+                <p><span className="font-medium text-slate-600">Pastor:</span> pastor@church.org</p>
+                <p><span className="font-medium text-slate-600">District:</span> district@church.org</p>
+                <p><span className="font-medium text-slate-600">Zonal:</span> zonal1@church.org &ndash; zonal10@church.org</p>
+                <p><span className="font-medium text-slate-600">Cell Leader:</span> cell1_1@church.org &ndash; cell10_4@church.org</p>
+                <p><span className="font-medium text-slate-600">Asst:</span> asst1_1@church.org &ndash; asst10_4@church.org</p>
+                <p><span className="font-medium text-slate-600">E-Group:</span> egroup1_1@church.org &ndash; egroup10_4@church.org</p>
+              </div>
+            </details>
+
             <p className="text-center text-sm text-slate-500">
               Don&apos;t have an account?{" "}
               <Link href="/register" className="text-primary-600 font-semibold hover:text-primary-700 transition">

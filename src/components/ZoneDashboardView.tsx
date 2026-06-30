@@ -115,18 +115,18 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50">
-                {[{ label: "Cell", align: "text-left" }, { label: "Leader", align: "text-left" }, { label: "Members", align: "text-center" }, { label: "Sunday", align: "text-center" }, { label: "Att.", align: "text-center" }, { label: "Rate", align: "text-center" }].map((h) => (
-                  <th key={h.label} className={`${h.align} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
+                {[{ label: "Cell", align: "text-left", sticky: "sticky left-0 z-10 bg-slate-50" }, { label: "Leader", align: "text-left", sticky: "sticky left-[75px] z-10 bg-slate-50" }, { label: "Members", align: "text-center", sticky: "" }, { label: "Sunday", align: "text-center", sticky: "" }, { label: "Att.", align: "text-center", sticky: "" }, { label: "Rate", align: "text-center", sticky: "" }].map((h) => (
+                  <th key={h.label} className={`${h.align} ${h.sticky} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filteredCells.map((c: any) => (
                 <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
-                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 z-10 bg-white sm:static sm:z-auto">
                     <Link href={`/dashboard?cell=${c.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">{c.name}</Link>
                   </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{c.leaderName}</td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none sticky left-[75px] z-10 bg-white sm:static sm:z-auto">{c.leaderName}</td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{c.totalMembers}</span></td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-primary-600 text-xs sm:text-sm">{c.presentThisSunday}</span></td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-700 text-xs sm:text-sm">{c.attendanceInRange}</span></td>

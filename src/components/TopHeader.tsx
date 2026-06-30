@@ -27,33 +27,17 @@ export default function TopHeader({ pageTitle, userName, userRole, userInitials,
   return (
     <header className="sticky top-0 z-20 h-16 lg:h-20 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-4 sm:px-6 lg:px-8">
       <div className="flex items-center gap-3 min-w-0">
-        {/* Hamburger button */}
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden p-2 rounded-xl hover:bg-slate-100 transition -ml-1"
+          className="p-2 rounded-xl hover:bg-slate-100 transition -ml-1"
           aria-label="Toggle sidebar"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600">
             {sidebarOpen ? (
-              <>
-                <line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/>
-              </>
+              <><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></>
             ) : (
-              <>
-                <line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/>
-              </>
+              <><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></>
             )}
-          </svg>
-        </button>
-
-        {/* Desktop sidebar toggle */}
-        <button
-          onClick={onToggleSidebar}
-          className="hidden lg:flex p-2 rounded-xl hover:bg-slate-100 transition"
-          aria-label="Toggle sidebar"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
-            <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/>
           </svg>
         </button>
 
@@ -64,7 +48,6 @@ export default function TopHeader({ pageTitle, userName, userRole, userInitials,
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-        {/* Notification bell */}
         <button className="relative p-2 rounded-xl hover:bg-slate-100 transition hidden sm:block">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -72,7 +55,6 @@ export default function TopHeader({ pageTitle, userName, userRole, userInitials,
           {hasNotifications && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />}
         </button>
 
-        {/* User profile */}
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden sm:block text-right min-w-0">
             <p className="text-sm font-medium text-slate-800 truncate max-w-[120px]">{userName || "User"}</p>
