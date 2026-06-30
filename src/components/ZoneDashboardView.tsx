@@ -40,7 +40,7 @@ function downloadCSV(filename: string, rows: string[][]) {
   URL.revokeObjectURL(link.href);
 }
 
-export default function ZoneDashboardView({ zoneId }: { zoneId: number }) {
+export default function ZoneDashboardView({ zoneId, userRole }: { zoneId: number; userRole?: string }) {
   const [data, setData] = useState<ZoneData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCell, setSelectedCell] = useState<number | null>(null);
@@ -66,7 +66,7 @@ export default function ZoneDashboardView({ zoneId }: { zoneId: number }) {
     return (
       <div>
         <button onClick={() => setSelectedCell(null)} className="text-sm text-primary-600 hover:underline mb-4 flex items-center gap-1">← Back to Zone Overview</button>
-        <CellDashboardView cellId={selectedCell} />
+        <CellDashboardView cellId={selectedCell} userRole={userRole || ""} />
       </div>
     );
   }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import AttendanceSheet from "./AttendanceSheet";
+import MemberManagement from "./MemberManagement";
 
 interface CellData {
   cell: any;
@@ -17,7 +18,7 @@ interface CellData {
   members: any[];
 }
 
-export default function CellDashboardView({ cellId }: { cellId: number }) {
+export default function CellDashboardView({ cellId, userRole }: { cellId: number; userRole: string }) {
   const [data, setData] = useState<CellData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
@@ -122,6 +123,13 @@ export default function CellDashboardView({ cellId }: { cellId: number }) {
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <AttendanceSheet cellId={cellId} onAddMember={() => setShowAddMember(true)} />
       </div>
+
+      {/* Member Management */}
+      {data.members.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <MemberManagement members={data.members} cellId={cellId} userRole={userRole} onUpdate={fetchData} />
+        </div>
+      )}
 
       {/* Add Member Modal */}
       {showAddMember && (

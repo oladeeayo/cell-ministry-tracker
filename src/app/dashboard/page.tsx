@@ -74,7 +74,7 @@ export default function DashboardPage() {
         {role === "COMMUNITY_PASTOR" && <OverviewDashboard userRole={role} />}
         {role === "DISTRICT_LEADER" && <OverviewDashboard userRole={role} />}
         {role === "ZONAL_LEADER" && userMeta?.zoneId && (
-          <ZoneDashboardView zoneId={userMeta.zoneId} />
+          <ZoneDashboardView zoneId={userMeta.zoneId} userRole={role} />
         )}
         {role === "ZONAL_LEADER" && !userMeta?.zoneId && (
           <div className="text-center py-12 text-gray-400">
@@ -82,7 +82,7 @@ export default function DashboardPage() {
           </div>
         )}
         {role === "CELL_LEADER" && userMeta?.cellId && (
-          <CellDashboardView cellId={userMeta.cellId} />
+          <CellDashboardView cellId={userMeta.cellId} userRole={role} />
         )}
         {role === "CELL_LEADER" && !userMeta?.cellId && (
           <div className="text-center py-12 text-gray-400">
@@ -90,7 +90,7 @@ export default function DashboardPage() {
           </div>
         )}
         {["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(role) && userMeta?.cellId && (
-          <CellDashboardView cellId={userMeta.cellId} />
+          <CellDashboardView cellId={userMeta.cellId} userRole={role} />
         )}
         {["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(role) && !userMeta?.cellId && (
           <div className="text-center py-12 text-gray-400">

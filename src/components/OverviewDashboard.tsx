@@ -66,7 +66,7 @@ export default function OverviewDashboard({ userRole }: { userRole: string }) {
     return (
       <div>
         <button onClick={() => setSelectedZone(null)} className="text-sm text-primary-600 hover:underline mb-4 flex items-center gap-1">← Back to Overview</button>
-        <ZoneDashboardView zoneId={selectedZone} />
+        <ZoneDashboardView zoneId={selectedZone} userRole={userRole} />
       </div>
     );
   }
