@@ -4,30 +4,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { searchParams } = new URL(req.url);
   const zoneId = searchParams.get("zoneId");
-  const userRole = (session.user as any).role;
-  const userId = parseInt((session.user as any).id);
 
-  let where: any = {};
-
+  const where: any = {};
   if (zoneId) {
     where.zoneId = parseInt(zoneId);
-  }
-
-  if (userRole === "CELL_LEADER" || userRole === "ASST_CELL_LEADER") {
-    const cellMember = await prisma.cellMember.findFirst({
-      where: { phone: (session.user as any).email },
-      select: { cellId: true },
-    });
-    if (cellMember) {
-      where.id = cellMember.cellId;
-    }
   }
 
   const cells = await prisma.cell.findMany({
