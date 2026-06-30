@@ -78,19 +78,19 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
 
   return (
     <div className="card !p-0 overflow-hidden">
-      <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="text-lg font-bold text-slate-900">Members ({members.length})</h3>
+      <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">Members ({members.length})</h3>
           <p className="text-xs text-slate-400 mt-0.5">Manage cell members</p>
         </div>
-        <input type="text" placeholder="Search by name or phone..." value={search} onChange={(e) => setSearch(e.target.value)} className="form-input !w-56" />
+        <input type="text" placeholder="Search by name or phone..." value={search} onChange={(e) => setSearch(e.target.value)} className="form-input !w-full sm:!w-56" />
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-50">
-              {["Name", "Phone", "Role", "Attendance", "Absences", "Actions"].map((h) => (
-                <th key={h} className="text-left px-6 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">{h}</th>
+              {["Name", "Phone", "Role", "Att.", "Abs.", "Actions"].map((h) => (
+                <th key={h} className="text-left px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
@@ -99,49 +99,49 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
               <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
                 {editId === m.id ? (
                   <>
-                    <td className="px-3 py-2"><input value={editName} onChange={(e) => setEditName(e.target.value)} className="form-input !py-1.5 !px-3" /></td>
-                    <td className="px-3 py-2"><input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="form-input !py-1.5 !px-3" /></td>
-                    <td className="px-3 py-2">
-                      <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className="form-select !py-1.5 !px-3 text-xs">
-                        {ROLE_OPTIONS.map((r) => <option key={r} value={r}>{r === "MEMBER" ? "Member" : r === "ASST_CELL_LEADER" ? "Asst. Cell Leader" : "E-Group Leader"}</option>)}
+                    <td className="px-2 sm:px-3 py-2"><input value={editName} onChange={(e) => setEditName(e.target.value)} className="form-input !py-1 sm:!py-1.5 !px-2 sm:!px-3 text-xs" /></td>
+                    <td className="px-2 sm:px-3 py-2"><input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="form-input !py-1 sm:!py-1.5 !px-2 sm:!px-3 text-xs" /></td>
+                    <td className="px-2 sm:px-3 py-2">
+                      <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className="form-select !py-1 sm:!py-1.5 !px-2 sm:!px-3 text-[10px] sm:text-xs">
+                        {ROLE_OPTIONS.map((r) => <option key={r} value={r}>{r === "MEMBER" ? "Member" : r === "ASST_CELL_LEADER" ? "Asst." : "E-Group"}</option>)}
                       </select>
                     </td>
                     <td></td><td></td>
-                    <td className="px-3 py-2">
-                      <div className="flex gap-1.5">
-                        <button onClick={saveEdit} className="px-3 py-1.5 text-xs font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">Save</button>
-                        <button onClick={cancelEdit} className="px-3 py-1.5 text-xs font-semibold border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition">Cancel</button>
+                    <td className="px-2 sm:px-3 py-2">
+                      <div className="flex gap-1">
+                        <button onClick={saveEdit} className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">Save</button>
+                        <button onClick={cancelEdit} className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition">Cancel</button>
                       </div>
                     </td>
                   </>
                 ) : (
                   <>
-                    <td className="px-6 py-4 font-semibold text-slate-900">{m.name}</td>
-                    <td className="px-6 py-4 text-slate-500">{m.phone || "—"}</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-semibold badge-neutral">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-slate-900 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">{m.name}</td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-500 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{m.phone || "—"}</td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <span className="px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-semibold badge-neutral whitespace-nowrap">
                         {m.role === "MEMBER" ? "Member" : m.role === "ASST_CELL_LEADER" ? "Asst." : "E-Group"}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`font-semibold ${(m.attendanceRate || 0) >= 70 ? "text-green-600" : (m.attendanceRate || 0) >= 40 ? "text-amber-600" : "text-red-500"}`}>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <span className={`text-xs sm:text-sm font-semibold ${(m.attendanceRate || 0) >= 70 ? "text-green-600" : (m.attendanceRate || 0) >= 40 ? "text-amber-600" : "text-red-500"}`}>
                         {m.attendanceRate || 0}%
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`font-semibold ${(m.consecutiveAbsences || 0) >= 3 ? "text-red-500" : "text-slate-500"}`}>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <span className={`text-xs sm:text-sm font-semibold ${(m.consecutiveAbsences || 0) >= 3 ? "text-red-500" : "text-slate-500"}`}>
                         {m.consecutiveAbsences || 0}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-1.5">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <div className="flex gap-1">
                         {canEdit && (
-                          <button onClick={() => startEdit(m)} className="px-2.5 py-1.5 text-xs font-semibold border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition">
+                          <button onClick={() => startEdit(m)} className="px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition whitespace-nowrap">
                             Edit
                           </button>
                         )}
                         {canDelete && (
-                          <button onClick={() => handleDelete(m.id)} disabled={deleting === m.id} className="px-2.5 py-1.5 text-xs font-semibold bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50 transition">
+                          <button onClick={() => handleDelete(m.id)} disabled={deleting === m.id} className="px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50 transition whitespace-nowrap">
                             {deleting === m.id ? "..." : "Delete"}
                           </button>
                         )}
@@ -155,7 +155,7 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
           </tbody>
         </table>
       </div>
-      <div className="px-6 py-4 border-t border-slate-100">
+      <div className="px-4 sm:px-6 py-4 border-t border-slate-100">
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </div>

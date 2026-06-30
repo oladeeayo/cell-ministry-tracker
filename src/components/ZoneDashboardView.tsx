@@ -47,11 +47,11 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
       {/* Zone Header */}
       <div className="card relative overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800 text-white !border-0 !p-0">
         <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/4" />
-        <div className="relative p-8">
-          <div className="flex items-start justify-between flex-wrap gap-4">
-            <div>
-              <h2 className="text-2xl font-bold">Zone {zone.zoneNumber} — {zone.name}</h2>
-              <p className="text-primary-100 text-sm mt-1">Zonal Leader: {zone.zonalLeader?.name || "N/A"}</p>
+        <div className="relative p-5 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold truncate pr-4">Zone {zone.zoneNumber} — {zone.name}</h2>
+              <p className="text-primary-100 text-xs sm:text-sm mt-1 truncate">Zonal Leader: {zone.zonalLeader?.name || "N/A"}</p>
             </div>
             <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={(f, t) => setDateRange({ from: f, to: t })} />
           </div>
@@ -79,7 +79,7 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
                 </div>
                 <p className="text-xs text-slate-500 font-medium">{kpi.label}</p>
               </div>
-              <p className={`text-3xl font-bold ${kpi.highlight || "text-slate-900"}`}>{kpi.value}</p>
+              <p className={`text-2xl sm:text-3xl font-bold truncate ${kpi.highlight || "text-slate-900"}`}>{kpi.value}</p>
             </div>
           ))}
         </div>
@@ -104,33 +104,33 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
 
       {/* Cell Table */}
       <div className="card !p-0 overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Cells ({cellStats.length})</h3>
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">Cells ({cellStats.length})</h3>
             <p className="text-xs text-slate-400 mt-0.5">Performance across all cells in this zone</p>
           </div>
-          <input type="text" placeholder="Search cell..." value={search} onChange={(e) => setSearch(e.target.value)} className="form-input !w-48" />
+          <input type="text" placeholder="Search cell..." value={search} onChange={(e) => setSearch(e.target.value)} className="form-input !w-full sm:!w-48" />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50">
-                {["Cell", "Leader", "Members", "Last Sunday", "Attendance", "Rate"].map((h) => (
-                  <th key={h} className="text-left px-6 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">{h}</th>
+                {["Cell", "Leader", "Members", "Sunday", "Att.", "Rate"].map((h) => (
+                  <th key={h} className="text-left px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filteredCells.map((c: any) => (
                 <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
-                  <td className="px-6 py-4">
-                    <Link href={`/dashboard?cell=${c.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition">{c.name}</Link>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <Link href={`/dashboard?cell=${c.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">{c.name}</Link>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">{c.leaderName}</td>
-                  <td className="px-6 py-4"><span className="font-medium text-slate-800">{c.totalMembers}</span></td>
-                  <td className="px-6 py-4"><span className="font-medium text-primary-600">{c.presentThisSunday}</span></td>
-                  <td className="px-6 py-4"><span className="font-medium text-slate-700">{c.attendanceInRange}</span></td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{c.leaderName}</td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-800 text-xs sm:text-sm">{c.totalMembers}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-primary-600 text-xs sm:text-sm">{c.presentThisSunday}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-700 text-xs sm:text-sm">{c.attendanceInRange}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
                     <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
                       c.attendanceRate >= 70 ? "badge-success" : c.attendanceRate >= 40 ? "badge-pending" : "badge-danger"
                     }`}>{c.attendanceRate}%</span>

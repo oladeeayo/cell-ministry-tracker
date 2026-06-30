@@ -49,16 +49,16 @@ export default function CellDashboardView({ userRole, cells, defaultCellId }: Pr
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">{currentCell?.name || "Cell Dashboard"}</h2>
-          <p className="text-sm text-slate-400 mt-0.5">Manage attendance and members</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">{currentCell?.name || "Cell Dashboard"}</h2>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Manage attendance and members</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <select
             value={cellId}
             onChange={(e) => setCellId(parseInt(e.target.value))}
-            className="form-select !w-auto !min-w-[160px]"
+            className="form-select !min-w-0 flex-1 sm:flex-none text-xs sm:text-sm"
           >
             {cells.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
@@ -87,7 +87,7 @@ export default function CellDashboardView({ userRole, cells, defaultCellId }: Pr
                 </div>
                 <p className="text-xs text-slate-500 font-medium">{kpi.label}</p>
               </div>
-              <p className={`text-3xl font-bold ${kpi.highlight || "text-slate-900"}`}>{kpi.value}</p>
+              <p className={`text-2xl sm:text-3xl font-bold truncate ${kpi.highlight || "text-slate-900"}`}>{kpi.value}</p>
               {kpi.sub && <p className="text-xs text-slate-400 mt-1">{kpi.sub}</p>}
             </div>
           ))}
@@ -112,16 +112,16 @@ export default function CellDashboardView({ userRole, cells, defaultCellId }: Pr
       )}
 
       {/* Tab Switcher */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-px">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab("attendance")}
-          className={`px-5 py-3 text-sm font-semibold transition border-b-2 -mb-px ${
+          className={`px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold transition border-b-2 -mb-px whitespace-nowrap ${
             activeTab === "attendance" ? "text-primary-600 border-primary-600" : "text-slate-400 border-transparent hover:text-slate-600"
           }`}
         >Attendance</button>
         <button
           onClick={() => setActiveTab("members")}
-          className={`px-5 py-3 text-sm font-semibold transition border-b-2 -mb-px ${
+          className={`px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold transition border-b-2 -mb-px whitespace-nowrap ${
             activeTab === "members" ? "text-primary-600 border-primary-600" : "text-slate-400 border-transparent hover:text-slate-600"
           }`}
         >Members</button>
@@ -130,13 +130,13 @@ export default function CellDashboardView({ userRole, cells, defaultCellId }: Pr
       {/* Attendance Tab */}
       {activeTab === "attendance" && (
         <>
-          <div className="flex flex-wrap gap-3">
-            <button onClick={() => setShowAddModal(true)} className="btn-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            <button onClick={() => setShowAddModal(true)} className="btn-primary !px-3 sm:!px-5 !py-2 sm:!py-2.5 !text-xs sm:!text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
               Add Member
             </button>
-            <button onClick={() => setShowBulkImport(true)} className="btn-secondary">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <button onClick={() => setShowBulkImport(true)} className="btn-secondary !px-3 sm:!px-5 !py-2 sm:!py-2.5 !text-xs sm:!text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
               Bulk Import
             </button>
           </div>

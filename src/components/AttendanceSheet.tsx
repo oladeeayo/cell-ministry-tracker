@@ -112,13 +112,13 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Active Sunday Table */}
         <div className="lg:col-span-3 card !p-0 overflow-hidden">
-          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Attendance — {formatDate(activeSunday)}</h3>
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">Attendance — {formatDate(activeSunday)}</h3>
               <p className="text-xs text-slate-400 mt-0.5">{isEditable ? "Toggle status for each member and save." : "Previous records are locked (read-only)."}</p>
             </div>
             {isEditable && (
-              <button onClick={saveAttendance} disabled={saving} className="btn-primary">
+              <button onClick={saveAttendance} disabled={saving} className="btn-primary !text-xs sm:!text-sm !px-4 sm:!px-5 !py-2 sm:!py-2.5">
                 {saving ? (
                   <span className="flex items-center gap-2"><svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>Saving...</span>
                 ) : "Save Attendance"}
@@ -129,10 +129,10 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50">
-                  <th className="text-left px-6 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">Member</th>
-                  <th className="text-left px-3 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">Role</th>
-                  <th className="text-center px-3 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">Status</th>
-                  {isEditable && <th className="text-left px-3 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">Note</th>}
+                  <th className="text-left px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">Member</th>
+                  <th className="text-left px-2 sm:px-3 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Role</th>
+                  <th className="text-center px-2 sm:px-3 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">Status</th>
+                  {isEditable && <th className="text-left px-2 sm:px-3 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">Note</th>}
                 </tr>
               </thead>
               <tbody>
@@ -141,30 +141,30 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
                   const isPresent = a?.present || false;
                   return (
                     <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-slate-900">{m.name}</p>
-                        {m.phone && <p className="text-xs text-slate-400 mt-0.5">{m.phone}</p>}
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 min-w-0">
+                        <p className="font-semibold text-slate-900 text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">{m.name}</p>
+                        {m.phone && <p className="text-xs text-slate-400 mt-0.5 truncate max-w-[120px] sm:max-w-none">{m.phone}</p>}
                       </td>
-                      <td className="px-3 py-4">
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-semibold badge-neutral">
+                      <td className="px-2 sm:px-3 py-3 sm:py-4 hidden sm:table-cell">
+                        <span className="px-2 sm:px-2.5 py-1 rounded-lg text-xs font-semibold badge-neutral whitespace-nowrap">
                           {m.role === "MEMBER" ? "Member" : m.role === "ASST_CELL_LEADER" ? "Asst." : m.role === "E_GROUP_LEADER" ? "E-Group" : m.role}
                         </span>
                       </td>
-                      <td className="px-3 py-4 text-center">
+                      <td className="px-2 sm:px-3 py-3 sm:py-4 text-center">
                         {isEditable ? (
                           <label className="inline-flex items-center cursor-pointer">
                             <div className="relative">
                               <input type="checkbox" checked={isPresent} onChange={() => toggleAttendance(m.id, isPresent)} className="sr-only peer" />
-                              <div className={`w-12 h-6 rounded-full transition-colors relative ${isPresent ? "bg-primary-600" : "bg-slate-200"}`}>
-                                <div className="w-5 h-5 bg-white rounded-full shadow-sm transition-all absolute top-0.5" style={{ left: isPresent ? "26px" : "2px" }} />
+                              <div className={`w-10 sm:w-12 h-5 sm:h-6 rounded-full transition-colors relative ${isPresent ? "bg-primary-600" : "bg-slate-200"}`}>
+                                <div className="w-4 sm:w-5 h-4 sm:h-5 bg-white rounded-full shadow-sm transition-all absolute top-0.5" style={{ left: isPresent ? "calc(100% - 18px)" : "2px" }} />
                               </div>
                             </div>
-                            <span className={`ml-2 text-xs font-semibold ${isPresent ? "text-primary-600" : "text-slate-400"}`}>
+                            <span className={`ml-1.5 sm:ml-2 text-[10px] sm:text-xs font-semibold ${isPresent ? "text-primary-600" : "text-slate-400"}`}>
                               {isPresent ? "Present" : "Absent"}
                             </span>
                           </label>
                         ) : (
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold ${
+                          <span className={`inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[10px] sm:text-xs font-semibold ${
                             isPresent ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"
                           }`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isPresent ? "bg-green-500" : "bg-slate-400"}`} />
@@ -173,8 +173,8 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
                         )}
                       </td>
                       {isEditable && (
-                        <td className="px-3 py-4">
-                          <input placeholder="Optional note..." value={notes[`${m.id}-${activeSunday}`] ?? a?.note ?? ""} onChange={(e) => setNotes({ ...notes, [`${m.id}-${activeSunday}`]: e.target.value })} className="form-input !py-1.5 !px-3 text-xs" />
+                        <td className="px-2 sm:px-3 py-3 sm:py-4 max-w-[80px] sm:max-w-none">
+                          <input placeholder="Note..." value={notes[`${m.id}-${activeSunday}`] ?? a?.note ?? ""} onChange={(e) => setNotes({ ...notes, [`${m.id}-${activeSunday}`]: e.target.value })} className="form-input !py-1 sm:!py-1.5 !px-2 sm:!px-3 text-[10px] sm:text-xs w-full" />
                         </td>
                       )}
                     </tr>

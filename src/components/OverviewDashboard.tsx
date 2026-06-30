@@ -45,11 +45,11 @@ export default function OverviewDashboard({ userRole }: Props) {
       <div className="card relative overflow-hidden !p-0 !border-0 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white">
         <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-1/3 w-48 h-48 rounded-full bg-white/5 translate-y-1/2" />
-        <div className="relative p-8 md:p-10">
-          <h2 className="text-2xl md:text-3xl font-bold">Welcome to Cell Ministry</h2>
-          <p className="text-primary-100 text-sm mt-2 max-w-xl">Track attendance, manage members, and gain insights across all zones and cells in your ministry.</p>
-          <div className="flex flex-wrap gap-3 mt-6">
-            <Link href="/register" className="px-5 py-2.5 bg-white text-primary-700 rounded-xl font-semibold text-sm hover:bg-primary-50 transition inline-flex items-center gap-2">
+        <div className="relative p-6 md:p-10">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Welcome to Cell Ministry</h2>
+          <p className="text-primary-100 text-xs sm:text-sm mt-2 max-w-xl">Track attendance, manage members, and gain insights across all zones and cells in your ministry.</p>
+          <div className="flex flex-wrap gap-3 mt-4 sm:mt-6">
+            <Link href="/register" className="px-4 sm:px-5 py-2 sm:py-2.5 bg-white text-primary-700 rounded-xl font-semibold text-xs sm:text-sm hover:bg-primary-50 transition inline-flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
               Register Member
             </Link>
@@ -84,7 +84,7 @@ export default function OverviewDashboard({ userRole }: Props) {
                 </div>
                 <p className="text-xs text-slate-500 font-medium">{kpi.label}</p>
               </div>
-              <p className={`text-3xl font-bold ${i === 3 ? ((stats.momGrowth || 0) >= 0 ? "text-green-600" : "text-red-500") : "text-slate-900"}`}>
+              <p className={`text-2xl sm:text-3xl font-bold truncate ${i === 3 ? ((stats.momGrowth || 0) >= 0 ? "text-green-600" : "text-red-500") : "text-slate-900"}`}>
                 {kpi.value}
               </p>
               {kpi.sub && <p className="text-xs text-slate-400 mt-1">{kpi.sub}</p>}
@@ -132,34 +132,34 @@ export default function OverviewDashboard({ userRole }: Props) {
 
       {/* Zone Table */}
       <div className="card !p-0 overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Live Cell Reports</h3>
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">Live Cell Reports</h3>
             <p className="text-xs text-slate-400 mt-0.5">Performance overview across all zones</p>
           </div>
-          <input type="text" placeholder="Search zone or leader..." value={search} onChange={(e) => setSearch(e.target.value)} className="form-input !w-56" />
+          <input type="text" placeholder="Search zone or leader..." value={search} onChange={(e) => setSearch(e.target.value)} className="form-input !w-full sm:!w-56" />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50">
-                {["Zone", "Zonal Leader", "Cells", "Members", "Last Sunday", "Attendance", "Rate"].map((h) => (
-                  <th key={h} className="text-left px-6 py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider">{h}</th>
+                {["Zone", "Leader", "Cells", "Members", "Sunday", "Att.", "Rate"].map((h) => (
+                  <th key={h} className="text-left px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filteredZones.map((z: any) => (
                 <tr key={z.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
-                  <td className="px-6 py-4">
-                    <Link href={`/dashboard?zone=${z.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition">Zone {z.zoneNumber}</Link>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <Link href={`/dashboard?zone=${z.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">Zone {z.zoneNumber}</Link>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">{z.zonalLeader}</td>
-                  <td className="px-6 py-4"><span className="font-medium text-slate-800">{z.totalCells}</span></td>
-                  <td className="px-6 py-4"><span className="font-medium text-slate-800">{z.totalMembers}</span></td>
-                  <td className="px-6 py-4"><span className="font-medium text-primary-600">{z.presentThisSunday}</span></td>
-                  <td className="px-6 py-4"><span className="font-medium text-slate-700">{z.attendanceInRange}</span></td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{z.zonalLeader}</td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalCells}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalMembers}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-primary-600 text-xs sm:text-sm">{z.presentThisSunday}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-700 text-xs sm:text-sm">{z.attendanceInRange}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
                     <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
                       z.attendanceRate >= 70 ? "badge-success" : z.attendanceRate >= 40 ? "badge-pending" : "badge-danger"
                     }`}>{z.attendanceRate}%</span>
