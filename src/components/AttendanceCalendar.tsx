@@ -42,7 +42,7 @@ export default function AttendanceCalendar({ data }: Props) {
           );
         })}
       </div>
-      <div className="flex items-center gap-4 mt-4 text-[10px] text-slate-400">
+      <div className="flex items-center justify-center gap-4 mt-4 text-[10px] text-slate-400">
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-primary-500 inline-block" /> &ge;70%</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-400 inline-block" /> 40-69%</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-300 inline-block" /> &lt;40%</span>
