@@ -50,14 +50,16 @@ model Cell {
 }
 
 model CellMember {
-  id        Int      @id @default(autoincrement())
-  name      String
-  phone     String
-  address   String?
-  role      String   @default("MEMBER")
-  cellId    Int
-  userId    Int?     @unique
-  createdAt DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  name           String
+  phone          String
+  address        String?
+  role           String   @default("MEMBER")
+  cellId         Int
+  userId         Int?     @unique
+  isVisitor      Boolean  @default(false)
+  firstVisitDate DateTime?
+  createdAt      DateTime @default(now())
 
   cell        Cell         @relation(fields: [cellId], references: [id])
   user        User?        @relation("CellMemberUser", fields: [userId], references: [id])
@@ -70,6 +72,7 @@ model Attendance {
   cellId       Int
   date         DateTime
   isPresent    Boolean  @default(false)
+  note         String?
   createdAt    DateTime @default(now())
 
   cellMember CellMember @relation(fields: [cellMemberId], references: [id])

@@ -22,8 +22,13 @@ export async function GET(req: Request) {
   });
 
   if (!cellMember) {
-    return NextResponse.json({ cellId: null, role: null });
+    return NextResponse.json({ cellId: null, role: null, cells: [] });
   }
 
-  return NextResponse.json({ cellId: cellMember.cellId, role: cellMember.role });
+  const cells = await prisma.cell.findMany({
+    where: { id: cellMember.cellId },
+    select: { id: true, name: true, zoneId: true },
+  });
+
+  return NextResponse.json({ cellId: cellMember.cellId, role: cellMember.role, cells });
 }

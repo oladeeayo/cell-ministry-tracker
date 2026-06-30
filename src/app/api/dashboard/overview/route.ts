@@ -3,159 +3,59 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-function getLastSunday(date: Date = new Date()): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? 0 : day;
-  d.setDate(d.getDate() - diff);
-  d.setHours(12, 0, 0, 0);
-  return d;
-}
-
-function getMonthStart(date: Date = new Date()): Date {
-  return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
-}
-
-function getWeekStart(date: Date = new Date()): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function getWeekEnd(date: Date = new Date()): Date {
-  const d = getWeekStart(date);
-  d.setDate(d.getDate() + 6);
-  d.setHours(23, 59, 59, 999);
-  return d;
-}
-
-function getPrevMonthStart(date: Date = new Date()): Date {
-  return new Date(date.getFullYear(), date.getMonth() - 1, 1, 0, 0, 0, 0);
-}
-
-function getPrevMonthEnd(date: Date = new Date()): Date {
-  return new Date(date.getFullYear(), date.getMonth(), 0, 23, 59, 59, 999);
-}
-
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const now = new Date();
-  const lastSunday = getLastSunday(now);
-  const monthStart = getMonthStart(now);
-  const weekStart = getWeekStart(now);
-  const weekEnd = getWeekEnd(now);
-  const prevMonthStart = getPrevMonthStart(now);
-  const prevMonthEnd = getPrevMonthEnd(now);
+  const { searchParams } = new URL(req.url);
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+  const rangeStart = fromParam ? new Date(fromParam) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const rangeEnd = toParam ? new Date(toParam + "T23:59:59") : new Date();
 
-  // Zone stats
   const zones = await prisma.zone.findMany({
-    include: {
-      zonalLeader: { select: { name: true } },
-      _count: { select: { cells: true } },
-      cells: {
-        include: {
-          _count: { select: { members: true } },
-        },
-      },
-    },
+    include: { zonalLeader: { select: { name: true } }, _count: { select: { cells: true } }, cells: { include: { _count: { select: { members: true } } } } },
   });
-
-  const totalZones = zones.length;
-  const totalCells = zones.reduce((sum, z) => sum + z._count.cells, 0);
-  const totalMembers = zones.reduce(
-    (sum, z) => sum + z.cells.reduce((s, c) => s + c._count.members, 0),
-    0
-  );
 
   const allCellIds = zones.flatMap((z) => z.cells.map((c) => c.id));
+  const totalZones = zones.length;
+  const totalCells = zones.reduce((s, z) => s + z._count.cells, 0);
+  const totalMembers = zones.reduce((s, z) => s + z.cells.reduce((s2, c) => s2 + c._count.members, 0), 0);
 
-  const presentThisSunday = await prisma.attendance.count({
-    where: { cellId: { in: allCellIds }, date: lastSunday, isPresent: true },
-  });
+  const lastSunday = new Date(); const day = lastSunday.getDay(); lastSunday.setDate(lastSunday.getDate() - (day === 0 ? 0 : day)); lastSunday.setHours(12, 0, 0, 0);
 
-  const attendanceThisMonth = await prisma.attendance.count({
-    where: { cellId: { in: allCellIds }, date: { gte: monthStart }, isPresent: true },
-  });
+  const presentThisSunday = await prisma.attendance.count({ where: { cellId: { in: allCellIds }, date: lastSunday, isPresent: true } });
+  const attendanceInRange = await prisma.attendance.count({ where: { cellId: { in: allCellIds }, date: { gte: rangeStart, lte: rangeEnd }, isPresent: true } });
+  const prevMonthStart = new Date(rangeStart.getFullYear(), rangeStart.getMonth() - 1, 1);
+  const prevMonthEnd = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 0, 23, 59, 59, 999);
+  const prevMonthCount = await prisma.attendance.count({ where: { cellId: { in: allCellIds }, date: { gte: prevMonthStart, lte: prevMonthEnd }, isPresent: true } });
+  const momGrowth = prevMonthCount > 0 ? Math.round(((attendanceInRange - prevMonthCount) / prevMonthCount) * 100) : attendanceInRange > 0 ? 100 : 0;
+  const cellsWithSubmission = await prisma.attendance.groupBy({ by: ["cellId"], where: { cellId: { in: allCellIds }, date: { gte: rangeStart, lte: rangeEnd } } });
 
-  const attendancePrevMonth = await prisma.attendance.count({
-    where: { cellId: { in: allCellIds }, date: { gte: prevMonthStart, lte: prevMonthEnd }, isPresent: true },
-  });
-
-  const momGrowth =
-    attendancePrevMonth > 0
-      ? Math.round(((attendanceThisMonth - attendancePrevMonth) / attendancePrevMonth) * 100)
-      : attendanceThisMonth > 0 ? 100 : 0;
-
-  const cellsWithSubmission = await prisma.attendance.groupBy({
-    by: ["cellId"],
-    where: { cellId: { in: allCellIds }, date: { gte: weekStart, lte: weekEnd } },
-  });
-
-  // Weekly trend (all cells)
-  const sundaysThisMonth: Date[] = [];
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-    if (d.getDay() === 0) {
-      const nextWeek = new Date(d);
-      nextWeek.setDate(d.getDate() + 7);
-      if (nextWeek.getMonth() !== d.getMonth()) continue;
-      sundaysThisMonth.push(new Date(d));
-    }
+  // Weekly trend
+  const sundays: Date[] = [];
+  const d = new Date(rangeStart);
+  while (d <= rangeEnd) {
+    if (d.getDay() === 0) { const nw = new Date(d); nw.setDate(d.getDate() + 7); if (nw.getMonth() === d.getMonth()) sundays.push(new Date(d)); }
+    d.setDate(d.getDate() + 1);
   }
+  const weeklyTrend = await Promise.all(sundays.map(async (sunday) => {
+    const end = new Date(sunday); end.setHours(23, 59, 59, 999);
+    const present = await prisma.attendance.count({ where: { cellId: { in: allCellIds }, date: { gte: sunday, lte: end }, isPresent: true } });
+    return { date: sunday.toISOString().split("T")[0], present };
+  }));
 
-  const weeklyTrend = await Promise.all(
-    sundaysThisMonth.map(async (sunday) => {
-      const endOfDay = new Date(sunday);
-      endOfDay.setHours(23, 59, 59, 999);
-      const present = await prisma.attendance.count({
-        where: { cellId: { in: allCellIds }, date: { gte: sunday, lte: endOfDay }, isPresent: true },
-      });
-      return { date: sunday.toISOString().split("T")[0], present };
-    })
-  );
-
-  // Per-zone breakdown
-  const zoneStats = await Promise.all(
-    zones.map(async (zone) => {
-      const zoneCellIds = zone.cells.map((c) => c.id);
-      const zPresent = await prisma.attendance.count({
-        where: { cellId: { in: zoneCellIds }, date: lastSunday, isPresent: true },
-      });
-      const zMonthly = await prisma.attendance.count({
-        where: { cellId: { in: zoneCellIds }, date: { gte: monthStart }, isPresent: true },
-      });
-      return {
-        id: zone.id,
-        zoneNumber: zone.zoneNumber,
-        zonalLeader: zone.zonalLeader.name,
-        totalCells: zone._count.cells,
-        totalMembers: zone.cells.reduce((s, c) => s + c._count.members, 0),
-        presentThisSunday: zPresent,
-        attendanceThisMonth: zMonthly,
-      };
-    })
-  );
+  const zoneStats = await Promise.all(zones.map(async (zone) => {
+    const zcIds = zone.cells.map((c) => c.id);
+    const zPresent = await prisma.attendance.count({ where: { cellId: { in: zcIds }, date: lastSunday, isPresent: true } });
+    const zMonthly = await prisma.attendance.count({ where: { cellId: { in: zcIds }, date: { gte: rangeStart, lte: rangeEnd }, isPresent: true } });
+    const zTotalAtt = await prisma.attendance.count({ where: { cellId: { in: zcIds }, date: { gte: rangeStart, lte: rangeEnd } } });
+    const zRate = zTotalAtt > 0 ? Math.round((zMonthly / zTotalAtt) * 100) : 0;
+    return { id: zone.id, zoneNumber: zone.zoneNumber, zonalLeader: zone.zonalLeader.name, totalCells: zone._count.cells, totalMembers: zone.cells.reduce((s, c) => s + c._count.members, 0), presentThisSunday: zPresent, attendanceInRange: zMonthly, attendanceRate: zRate };
+  }));
 
   return NextResponse.json({
-    stats: {
-      totalZones,
-      totalCells,
-      totalMembers,
-      presentThisSunday,
-      cellsWithSubmission: cellsWithSubmission.length,
-      attendanceThisMonth,
-      attendancePrevMonth,
-      momGrowth,
-    },
-    zones: zoneStats,
-    weeklyTrend,
+    stats: { totalZones, totalCells, totalMembers, presentThisSunday, cellsWithSubmission: cellsWithSubmission.length, attendanceInRange, momGrowth },
+    zones: zoneStats, weeklyTrend, range: { from: rangeStart.toISOString().split("T")[0], to: rangeEnd.toISOString().split("T")[0] },
   });
 }

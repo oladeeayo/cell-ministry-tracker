@@ -1,146 +1,148 @@
 "use client";
 
-import { useState } from "react";
-import { ROLE_LABELS, canEdit } from "@/lib/hierarchy";
+import { useState, useEffect, useMemo } from "react";
+import Pagination from "./Pagination";
 
 interface Member {
-  id: number;
-  name: string;
-  phone: string;
-  address: string | null;
-  role: string;
-  cellId: number;
+  id: number; name: string; phone: string; role: string;
+  attendanceRate?: number; consecutiveAbsences?: number;
 }
 
-interface Props {
-  members: Member[];
-  cellId: number;
-  userRole: string;
-  onUpdate: () => void;
-}
+const EDIT_ROLES = ["CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"];
+const DELETE_ROLES = ["CELL_LEADER", "ASST_CELL_LEADER"];
+const ROLE_OPTIONS = ["MEMBER", "ASST_CELL_LEADER", "E_GROUP_LEADER"];
+const PAGE_SIZE = 20;
 
-export default function MemberManagement({ members, cellId, userRole, onUpdate }: Props) {
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState({ name: "", phone: "", address: "", role: "" });
-  const [saving, setSaving] = useState(false);
+interface Props { cellId: number; userRole: string; refreshTrigger: number; }
+
+export default function MemberManagement({ cellId, userRole, refreshTrigger }: Props) {
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editRole, setEditRole] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [deleting, setDeleting] = useState<number | null>(null);
 
-  const startEdit = (m: Member) => {
-    setForm({ name: m.name, phone: m.phone, address: m.address || "", role: m.role });
-    setEditingId(m.id);
+  const canEdit = EDIT_ROLES.includes(userRole);
+  const canDelete = DELETE_ROLES.includes(userRole);
+
+  const fetchMembers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/dashboard/cell/${cellId}`);
+      const data = await res.json();
+      setMembers(data.members || []);
+    } catch (e) { console.error(e); }
+    setLoading(false);
   };
+
+  useEffect(() => { if (cellId) fetchMembers(); }, [cellId, refreshTrigger]);
+
+  const filtered = useMemo(() => {
+    if (!search) return members;
+    const q = search.toLowerCase();
+    return members.filter((m) => m.name.toLowerCase().includes(q) || m.phone.includes(q));
+  }, [members, search]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => { setPage(1); }, [search]);
+
+  const startEdit = (m: Member) => { setEditId(m.id); setEditName(m.name); setEditPhone(m.phone); setEditRole(m.role); };
+  const cancelEdit = () => { setEditId(null); };
 
   const saveEdit = async () => {
-    if (!editingId) return;
-    setSaving(true);
+    if (!editName.trim()) return;
     try {
-      await fetch(`/api/members/${editingId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      setEditingId(null);
-      onUpdate();
-    } catch (e) {
-      console.error("Failed to update member", e);
-    }
-    setSaving(false);
+      await fetch(`/api/members/${editId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: editName, phone: editPhone, role: editRole }) });
+      setEditId(null);
+      fetchMembers();
+    } catch (e) { console.error(e); }
   };
 
-  const deleteMember = async (id: number) => {
-    if (!confirm("Are you sure you want to remove this member?")) return;
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this member? Their attendance records will also be removed.")) return;
     setDeleting(id);
     try {
       await fetch(`/api/members/${id}`, { method: "DELETE" });
-      onUpdate();
-    } catch (e) {
-      console.error("Failed to delete member", e);
-    }
+      fetchMembers();
+    } catch (e) { console.error(e); }
     setDeleting(null);
   };
 
-  const downloadMembersCSV = () => {
-    const rows = [["Name", "Phone", "Address", "Role"]];
-    members.forEach((m) => rows.push([m.name, m.phone, m.address || "", ROLE_LABELS[m.role] || m.role]));
-    const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `members-cell-${cellId}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
-
-  if (members.length === 0) {
-    return <div className="text-center py-6 text-gray-400">No members found.</div>;
-  }
+  if (loading) return <div className="text-center py-8 text-gray-400">Loading members...</div>;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
         <h3 className="font-semibold text-gray-800">Members ({members.length})</h3>
-        <button onClick={downloadMembersCSV} className="text-xs px-3 py-1.5 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition">
-          Download CSV
-        </button>
+        <input type="text" placeholder="Search by name or phone..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-60 focus:ring-2 focus:ring-primary-500 outline-none" />
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50">
-              <th className="text-left px-4 py-2.5 font-medium text-gray-600">Name</th>
-              <th className="text-left px-3 py-2.5 font-medium text-gray-600">Phone</th>
-              <th className="text-left px-3 py-2.5 font-medium text-gray-600">Role</th>
-              <th className="text-center px-3 py-2.5 font-medium text-gray-600">Actions</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
+              <th className="text-left px-3 py-3 font-medium text-gray-500">Phone</th>
+              <th className="text-left px-3 py-3 font-medium text-gray-500">Role</th>
+              <th className="text-center px-3 py-3 font-medium text-gray-500">Attendance</th>
+              <th className="text-center px-3 py-3 font-medium text-gray-500">Absences</th>
+              {(canEdit || canDelete) && <th className="text-center px-3 py-3 font-medium text-gray-500">Actions</th>}
             </tr>
           </thead>
           <tbody>
-            {members.map((member) => (
-              <tr key={member.id} className="border-t border-gray-100">
-                {editingId === member.id ? (
+            {paginated.map((m) => (
+              <tr key={m.id} className="border-t border-gray-100 hover:bg-gray-50/50">
+                {editId === m.id ? (
                   <>
-                    <td className="px-4 py-2">
-                      <input className="w-full px-2 py-1 border border-gray-300 rounded text-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                    </td>
+                    <td className="px-4 py-2"><input value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-primary-500 outline-none" /></td>
+                    <td className="px-3 py-2"><input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-primary-500 outline-none" /></td>
                     <td className="px-3 py-2">
-                      <input className="w-full px-2 py-1 border border-gray-300 rounded text-sm" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-                    </td>
-                    <td className="px-3 py-2">
-                      <select className="w-full px-2 py-1 border border-gray-300 rounded text-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-                        <option value="MEMBER">Member</option>
-                        <option value="E_GROUP_LEADER">E-Group Leader</option>
-                        <option value="ASST_CELL_LEADER">Asst. Cell Leader</option>
+                      <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-primary-500 outline-none">
+                        {ROLE_OPTIONS.map((r) => <option key={r} value={r}>{r === "MEMBER" ? "Member" : r === "ASST_CELL_LEADER" ? "Asst. Cell Leader" : "E-Group Leader"}</option>)}
                       </select>
                     </td>
+                    <td></td><td></td>
                     <td className="px-3 py-2 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button onClick={saveEdit} disabled={saving} className="text-xs px-2 py-1 bg-primary-700 text-white rounded hover:bg-primary-800 disabled:opacity-50">Save</button>
-                        <button onClick={() => setEditingId(null)} className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50">Cancel</button>
+                      <div className="flex gap-1 justify-center">
+                        <button onClick={saveEdit} className="px-3 py-1 text-xs bg-primary-700 text-white rounded hover:bg-primary-800 transition">Save</button>
+                        <button onClick={cancelEdit} className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 transition">Cancel</button>
                       </div>
                     </td>
                   </>
                 ) : (
                   <>
-                    <td className="px-4 py-2.5 text-gray-800">{member.name}</td>
-                    <td className="px-3 py-2.5 text-gray-500">{member.phone}</td>
-                    <td className="px-3 py-2.5">
-                      <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">{ROLE_LABELS[member.role] || member.role}</span>
+                    <td className="px-4 py-3 font-medium text-gray-800">{m.name}</td>
+                    <td className="px-3 py-3 text-gray-600">{m.phone || "—"}</td>
+                    <td className="px-3 py-3"><span className="bg-gray-100 px-2 py-0.5 rounded text-xs text-gray-500">{m.role === "MEMBER" ? "Member" : m.role === "ASST_CELL_LEADER" ? "Asst." : "E-Group"}</span></td>
+                    <td className="px-3 py-3 text-center">
+                      <span className={`font-medium ${(m.attendanceRate || 0) >= 70 ? "text-green-600" : (m.attendanceRate || 0) >= 40 ? "text-yellow-600" : "text-red-500"}`}>{m.attendanceRate || 0}%</span>
                     </td>
-                    <td className="px-3 py-2.5 text-center">
-                      {canEdit(userRole, member.role) && (
-                        <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => startEdit(member)} className="text-xs text-primary-600 hover:underline">Edit</button>
-                          <button onClick={() => deleteMember(member.id)} disabled={deleting === member.id} className="text-xs text-red-500 hover:underline disabled:opacity-50">
-                            {deleting === member.id ? "..." : "Remove"}
-                          </button>
+                    <td className="px-3 py-3 text-center">
+                      <span className={`font-medium ${(m.consecutiveAbsences || 0) >= 3 ? "text-red-500" : "text-gray-600"}`}>{m.consecutiveAbsences || 0}</span>
+                    </td>
+                    {(canEdit || canDelete) && (
+                      <td className="px-3 py-3 text-center">
+                        <div className="flex gap-1 justify-center">
+                          {canEdit && <button onClick={() => startEdit(m)} className="px-2.5 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 transition">Edit</button>}
+                          {canDelete && <button onClick={() => handleDelete(m.id)} disabled={deleting === m.id} className="px-2.5 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100 disabled:opacity-50 transition">{deleting === m.id ? "..." : "Delete"}</button>}
                         </div>
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </>
                 )}
               </tr>
             ))}
+            {paginated.length === 0 && <tr><td colSpan={6} className="text-center py-8 text-gray-400">No members found.</td></tr>}
           </tbody>
         </table>
+      </div>
+      <div className="px-6 py-3 border-t border-gray-100">
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </div>
   );

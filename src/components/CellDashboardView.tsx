@@ -1,171 +1,104 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import AttendanceSheet from "./AttendanceSheet";
 import MemberManagement from "./MemberManagement";
+import BulkImportModal from "./BulkImportModal";
+import DateRangePicker from "./DateRangePicker";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-interface CellData {
-  cell: any;
-  stats: {
-    totalMembers: number;
-    presentThisSunday: number;
-    attendanceThisMonth: number;
-    momGrowth: number;
-    lastSundayDate: string;
-  };
-  sundays: string[];
-  members: any[];
+interface Props {
+  userRole: string;
+  cells: { id: number; name: string; zoneId: number }[];
+  defaultCellId?: number;
 }
 
-export default function CellDashboardView({ cellId, userRole }: { cellId: number; userRole: string }) {
-  const [data, setData] = useState<CellData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showAddMember, setShowAddMember] = useState(false);
-  const [memberForm, setMemberForm] = useState({ name: "", phone: "", address: "", role: "MEMBER" });
-  const [adding, setAdding] = useState(false);
-  const [addError, setAddError] = useState("");
+function formatDate(d: string) { return new Date(d + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" }); }
+function getMonthRange() {
+  const n = new Date();
+  return { from: new Date(n.getFullYear(), n.getMonth(), 1).toISOString().split("T")[0], to: n.toISOString().split("T")[0] };
+}
 
-  const fetchData = () => {
-    fetch(`/api/dashboard/cell/${cellId}`)
-      .then((r) => r.json())
-      .then(setData)
-      .finally(() => setLoading(false));
-  };
+export default function CellDashboardView({ userRole, cells, defaultCellId }: Props) {
+  const [cellId, setCellId] = useState(defaultCellId || (cells.length > 0 ? cells[0].id : 0));
+  const [stats, setStats] = useState<any>(null);
+  const [weeklyTrend, setWeeklyTrend] = useState<any[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [dateRange, setDateRange] = useState(getMonthRange());
 
-  useEffect(() => { fetchData(); }, [cellId]);
-
-  const handleAddMember = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!memberForm.name || !memberForm.phone) {
-      setAddError("Name and phone are required");
-      return;
-    }
-    setAdding(true);
-    setAddError("");
+  const fetchStats = async () => {
+    if (!cellId) return;
     try {
-      const res = await fetch("/api/members", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...memberForm, cellId: String(cellId) }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        setAddError(err.error || "Failed to add member");
-        setAdding(false);
-        return;
-      }
-      setShowAddMember(false);
-      setMemberForm({ name: "", phone: "", address: "", role: "MEMBER" });
-      fetchData();
-    } catch {
-      setAddError("Network error");
-    }
-    setAdding(false);
+      const res = await fetch(`/api/dashboard/cell/${cellId}?from=${dateRange.from}&to=${dateRange.to}`);
+      const data = await res.json();
+      setStats(data);
+      setWeeklyTrend(data.weeklyTrend || []);
+    } catch (e) { console.error(e); }
   };
 
-  if (loading) {
-    return <div className="text-center py-12 text-gray-400">Loading cell dashboard...</div>;
-  }
+  useEffect(() => { fetchStats(); }, [cellId, dateRange.from, dateRange.to]);
 
-  if (!data) {
-    return <div className="text-center py-12 text-red-400">Failed to load cell data</div>;
-  }
-
-  const { stats } = data;
-
-  const trendData = data.sundays.map((s) => {
-    const d = new Date(s + "T12:00:00");
-    const present = data.members.filter((m: any) => m.attendance[s]).length;
-    return {
-      date: d.toLocaleDateString("en-US", { day: "numeric", month: "short" }),
-      present,
-      absent: data.members.length - present,
-    };
-  });
+  if (cells.length === 0) return <div className="text-center py-12 text-gray-400">No cells assigned to you.</div>;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800">{data.cell?.name}</h2>
-        <p className="text-gray-500">Zone {data.cell?.zone?.zoneNumber}</p>
+      {/* Controls */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <select value={cellId} onChange={(e) => setCellId(parseInt(e.target.value))} className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-primary-500 outline-none">
+            {cells.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={(f, t) => setDateRange({ from: f, to: t })} />
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => setShowBulkImport(true)} className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Bulk Import</button>
+          <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-primary-700 text-white rounded-lg text-sm font-medium hover:bg-primary-800 transition">+ Add Member</button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Members" value={stats.totalMembers} icon="👥" />
-        <StatCard
-          label="Present This Sunday"
-          value={stats.presentThisSunday}
-          subtitle={stats.lastSundayDate ? new Date(stats.lastSundayDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}
-          icon="✅"
-        />
-        <StatCard label="Attendance This Month" value={stats.attendanceThisMonth} icon="📅" />
-        <StatCard label="MoM Growth" value={`${stats.momGrowth >= 0 ? "+" : ""}${stats.momGrowth}%`} icon="📈" positive={stats.momGrowth >= 0} />
-      </div>
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-400">Members</p><p className="text-2xl font-bold text-gray-800 mt-0.5">{stats.memberCount || 0}</p></div>
+          <div className="bg-white p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-400">Present (Last Sun)</p><p className="text-2xl font-bold text-primary-700 mt-0.5">{stats.presentThisSunday || 0}</p></div>
+          <div className="bg-white p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-400">Attendance (Range)</p><p className="text-2xl font-bold text-indigo-600 mt-0.5">{stats.attendanceInRange || 0}</p></div>
+          <div className="bg-white p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-400">Avg Rate</p><p className="text-2xl font-bold text-emerald-600 mt-0.5">{stats.attendanceRate || 0}%</p></div>
+        </div>
+      )}
 
-      {/* Mini trend chart */}
-      {trendData.length > 1 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Weekly Attendance Trend</h3>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={trendData}>
+      {/* Chart */}
+      {weeklyTrend.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="font-semibold text-gray-800 mb-4">Weekly Attendance Trend</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={weeklyTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" allowDecimals={false} />
-              <Tooltip />
-              <Line type="monotone" dataKey="present" stroke="#2563eb" strokeWidth={2} dot={{ fill: "#2563eb" }} name="Present" />
-            </LineChart>
+              <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+              <Tooltip labelFormatter={(v) => formatDate(v)} />
+              <Bar dataKey="present" fill="var(--color-primary-600, #4f46e5)" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       )}
 
       {/* Attendance Sheet */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <AttendanceSheet cellId={cellId} userRole={userRole} onAddMember={() => setShowAddMember(true)} />
-      </div>
+      <AttendanceSheet cellId={cellId} userRole={userRole} onAddMember={() => setShowAddModal(true)} />
 
       {/* Member Management */}
-      {data.members.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <MemberManagement members={data.members} cellId={cellId} userRole={userRole} onUpdate={fetchData} />
-        </div>
-      )}
+      <MemberManagement cellId={cellId} userRole={userRole} refreshTrigger={refreshTrigger} />
+
+      {/* Bulk Import Modal */}
+      {showBulkImport && <BulkImportModal cellId={cellId} onClose={() => setShowBulkImport(false)} onDone={() => { setShowBulkImport(false); setRefreshTrigger((r) => r + 1); }} />}
 
       {/* Add Member Modal */}
-      {showAddMember && (
+      {showAddModal && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Add New Member</h3>
-              <button onClick={() => setShowAddMember(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-            </div>
-            {addError && <div className="bg-red-50 text-red-600 px-4 py-2 rounded-lg mb-4 text-sm">{addError}</div>}
-            <form onSubmit={handleAddMember} className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                <input required className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" value={memberForm.name} onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
-                <input required className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" value={memberForm.phone} onChange={(e) => setMemberForm({ ...memberForm, phone: e.target.value })} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <input className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" value={memberForm.address} onChange={(e) => setMemberForm({ ...memberForm, address: e.target.value })} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" value={memberForm.role} onChange={(e) => setMemberForm({ ...memberForm, role: e.target.value })}>
-                  <option value="MEMBER">Member</option>
-                  <option value="ASST_CELL_LEADER">Asst. Cell Leader</option>
-                  <option value="E_GROUP_LEADER">E-Group Leader</option>
-                </select>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowAddMember(false)} className="flex-1 py-2.5 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
-                <button type="submit" disabled={adding} className="flex-1 py-2.5 bg-primary-700 text-white rounded-lg text-sm font-medium hover:bg-primary-800 disabled:opacity-50 transition">{adding ? "Adding..." : "Add Member"}</button>
-              </div>
-            </form>
+            <div className="flex items-center justify-between mb-5"><h3 className="text-lg font-semibold text-gray-800">Add Member</h3><button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button></div>
+            <AddMemberForm cellId={cellId} onDone={() => { setShowAddModal(false); setRefreshTrigger((r) => r + 1); }} />
           </div>
         </div>
       )}
@@ -173,13 +106,30 @@ export default function CellDashboardView({ cellId, userRole }: { cellId: number
   );
 }
 
-function StatCard({ label, value, subtitle, icon, positive }: { label: string; value: string | number; subtitle?: string; icon: string; positive?: boolean }) {
+function AddMemberForm({ cellId, onDone }: { cellId: number; onDone: () => void }) {
+  const [name, setName] = useState(""); const [phone, setPhone] = useState(""); const [address, setAddress] = useState(""); const [role, setRole] = useState("MEMBER"); const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!name.trim()) return; setSubmitting(true);
+    try {
+      await fetch("/api/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, phone, address, role, cellId: String(cellId), skipAccount: role === "MEMBER" }) });
+      onDone();
+    } catch (e) { console.error(e); }
+    setSubmitting(false);
+  };
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-2"><span className="text-2xl">{icon}</span></div>
-      <div className={`text-2xl font-bold ${positive !== undefined ? (positive ? "text-green-600" : "text-red-600") : "text-gray-800"}`}>{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
-      {subtitle && <div className="text-xs text-gray-400 mt-0.5">{subtitle}</div>}
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input required placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
+      <input placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
+      <input placeholder="Address (optional)" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
+      <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+        <option value="MEMBER">Member</option>
+        <option value="ASST_CELL_LEADER">Asst. Cell Leader</option>
+        <option value="E_GROUP_LEADER">E-Group Leader</option>
+      </select>
+      <p className="text-xs text-gray-400">Members don't need login accounts.</p>
+      <button type="submit" disabled={submitting || !name.trim()} className="w-full py-2.5 bg-primary-700 text-white rounded-lg text-sm font-medium hover:bg-primary-800 disabled:opacity-50 transition">{submitting ? "Adding..." : "Add Member"}</button>
+    </form>
   );
 }

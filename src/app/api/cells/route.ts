@@ -6,11 +6,11 @@ import { authOptions } from "@/lib/auth";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const zoneId = searchParams.get("zoneId");
+  const id = searchParams.get("id");
 
   const where: any = {};
-  if (zoneId) {
-    where.zoneId = parseInt(zoneId);
-  }
+  if (zoneId) { where.zoneId = parseInt(zoneId); }
+  if (id) { where.id = parseInt(id); }
 
   const cells = await prisma.cell.findMany({
     where,

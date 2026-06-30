@@ -23,10 +23,7 @@ export async function GET(req: Request) {
   endDate.setHours(23, 59, 59, 999);
 
   const records = await prisma.attendance.findMany({
-    where: {
-      cellId: parseInt(cellId),
-      date: { gte: startDate, lte: endDate },
-    },
+    where: { cellId: parseInt(cellId), date: { gte: startDate, lte: endDate } },
   });
 
   return NextResponse.json(records);
@@ -41,29 +38,22 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { cellId, date, attendance } = body;
-    // attendance: Array<{ cellMemberId: number; isPresent: boolean }>
+    // attendance: Array<{ cellMemberId: number; isPresent: boolean; note?: string }>
 
     const targetDate = new Date(date);
     targetDate.setHours(12, 0, 0, 0);
 
     const results = [];
-
     for (const record of attendance) {
       const result = await prisma.attendance.upsert({
-        where: {
-          cellMemberId_date: {
-            cellMemberId: record.cellMemberId,
-            date: targetDate,
-          },
-        },
-        update: {
-          isPresent: record.isPresent,
-        },
+        where: { cellMemberId_date: { cellMemberId: record.cellMemberId, date: targetDate } },
+        update: { isPresent: record.isPresent, note: record.note || null },
         create: {
           cellMemberId: record.cellMemberId,
           cellId: parseInt(cellId),
           date: targetDate,
           isPresent: record.isPresent,
+          note: record.note || null,
         },
       });
       results.push(result);

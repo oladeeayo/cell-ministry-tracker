@@ -1,188 +1,118 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import ZoneDashboardView from "./ZoneDashboardView";
+import DateRangePicker from "./DateRangePicker";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-interface OverviewData {
-  stats: {
-    totalZones: number;
-    totalCells: number;
-    totalMembers: number;
-    presentThisSunday: number;
-    cellsWithSubmission: number;
-    attendanceThisMonth: number;
-    momGrowth: number;
-  };
-  zones: {
-    id: number;
-    zoneNumber: string;
-    zonalLeader: string;
-    totalCells: number;
-    totalMembers: number;
-    presentThisSunday: number;
-    attendanceThisMonth: number;
-  }[];
-  weeklyTrend: { date: string; present: number }[];
+interface Props { userRole: string; }
+
+function formatDate(d: string) { return new Date(d + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" }); }
+function getMonthRange() {
+  const n = new Date();
+  return { from: new Date(n.getFullYear(), n.getMonth(), 1).toISOString().split("T")[0], to: n.toISOString().split("T")[0] };
 }
 
-function formatDateShort(dateStr: string) {
-  return new Date(dateStr + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" });
-}
-
-function downloadCSV(filename: string, rows: string[][]) {
-  const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
-
-export default function OverviewDashboard({ userRole }: { userRole: string }) {
-  const [data, setData] = useState<OverviewData | null>(null);
+export default function OverviewDashboard({ userRole }: Props) {
+  const [stats, setStats] = useState<any>(null);
+  const [zones, setZones] = useState<any[]>([]);
+  const [weeklyTrend, setWeeklyTrend] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedZone, setSelectedZone] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState(getMonthRange());
+  const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    fetch("/api/dashboard/overview")
-      .then((r) => r.json())
-      .then(setData)
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return <div className="text-center py-12 text-gray-400">Loading overview...</div>;
-  }
-
-  if (!data) {
-    return <div className="text-center py-12 text-red-400">Failed to load overview</div>;
-  }
-
-  const { stats } = data;
-
-  if (selectedZone) {
-    return (
-      <div>
-        <button onClick={() => setSelectedZone(null)} className="text-sm text-primary-600 hover:underline mb-4 flex items-center gap-1">← Back to Overview</button>
-        <ZoneDashboardView zoneId={selectedZone} userRole={userRole} />
-      </div>
-    );
-  }
-
-  const trendData = data.weeklyTrend.map((w) => ({
-    date: formatDateShort(w.date),
-    present: w.present,
-  }));
-
-  const zoneChartData = data.zones.map((z) => ({
-    name: `Zone ${z.zoneNumber}`,
-    Members: z.totalMembers,
-    Present: z.presentThisSunday,
-  }));
-
-  const handleDownloadCSV = () => {
-    const rows = [
-      ["Zone", "Zonal Leader", "Cells", "Members", "Present This Sunday", "Monthly Attendance"],
-      ...data.zones.map((z) => [`Zone ${z.zoneNumber}`, z.zonalLeader, String(z.totalCells), String(z.totalMembers), String(z.presentThisSunday), String(z.attendanceThisMonth)]),
-    ];
-    downloadCSV("ministry-overview-report.csv", rows);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/dashboard/overview?from=${dateRange.from}&to=${dateRange.to}`);
+      const data = await res.json();
+      setStats(data.stats);
+      setZones(data.zones || []);
+      setWeeklyTrend(data.weeklyTrend || []);
+    } catch (e) { console.error(e); }
+    setLoading(false);
   };
+
+  useEffect(() => { fetchData(); }, [dateRange.from, dateRange.to]);
+
+  const filteredZones = zones.filter((z) => !search || z.zoneNumber.toString().includes(search) || z.zonalLeader.toLowerCase().includes(search.toLowerCase()));
+
+  if (loading) return <div className="text-center py-8 text-gray-400">Loading overview...</div>;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Ministry Overview</h2>
-          <p className="text-gray-500">{userRole === "COMMUNITY_PASTOR" ? "Community Pastor" : "District Leader"} Dashboard</p>
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h2 className="text-xl font-bold text-gray-800">Overall Dashboard</h2>
+        <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={(f, t) => setDateRange({ from: f, to: t })} />
+      </div>
+
+      {/* Stats */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-400">Zones</p><p className="text-2xl font-bold text-gray-800 mt-0.5">{stats.totalZones}</p></div>
+          <div className="bg-white p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-400">Cells</p><p className="text-2xl font-bold text-gray-800 mt-0.5">{stats.totalCells}</p></div>
+          <div className="bg-white p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-400">Members</p><p className="text-2xl font-bold text-gray-800 mt-0.5">{stats.totalMembers}</p></div>
+          <div className="bg-white p-4 rounded-xl border border-gray-200"><p className="text-xs text-gray-400">MoM Growth</p><p className={`text-2xl font-bold mt-0.5 ${(stats.momGrowth || 0) >= 0 ? "text-green-600" : "text-red-500"}`}>{stats.momGrowth}%</p></div>
         </div>
-        <button onClick={handleDownloadCSV} className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Download CSV</button>
-      </div>
+      )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Zones" value={stats.totalZones} icon="🗺️" />
-        <StatCard label="Total Cells" value={stats.totalCells} icon="🏠" />
-        <StatCard label="Total Members" value={stats.totalMembers} icon="👥" />
-        <StatCard label="Present This Sunday" value={stats.presentThisSunday} icon="✅" />
-        <StatCard label="Cells Submitted" value={`${stats.cellsWithSubmission}/${stats.totalCells}`} icon="📋" />
-        <StatCard label="Attendance This Month" value={stats.attendanceThisMonth} icon="📅" />
-        <StatCard label="MoM Growth" value={`${stats.momGrowth >= 0 ? "+" : ""}${stats.momGrowth}%`} icon="📈" positive={stats.momGrowth >= 0} />
-      </div>
+      {/* Weekly Trend */}
+      {weeklyTrend.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="font-semibold text-gray-800 mb-4">Overall Weekly Attendance</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={weeklyTrend.map((w) => ({ name: formatDate(w.date), present: w.present }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="present" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
-      {/* Charts */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {trendData.length > 1 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Overall Attendance Trend</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-                <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" allowDecimals={false} />
-                <Tooltip />
-                <Line type="monotone" dataKey="present" stroke="#2563eb" strokeWidth={2} dot={{ fill: "#2563eb" }} name="Total Present" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-        {zoneChartData.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Zones Comparison</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={zoneChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-                <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="Members" fill="#93c5fd" radius={[4, 4, 0, 0]} name="Total Members" />
-                <Bar dataKey="Present" fill="#2563eb" radius={[4, 4, 0, 0]} name="Present This Sunday" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </div>
+      {/* Zone Comparison */}
+      {zones.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="font-semibold text-gray-800 mb-4">Zone Comparison</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={zones.map((z) => ({ name: `Zone ${z.zoneNumber}`, present: z.presentThisSunday, rate: z.attendanceRate }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="present" fill="#6366f1" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
-      {/* Zones table */}
+      {/* Zone Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100"><h3 className="font-semibold text-gray-800">Zones Overview</h3></div>
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+          <h3 className="font-semibold text-gray-800">All Zones</h3>
+          <input type="text" placeholder="Search zone/leader..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-48 focus:ring-2 focus:ring-primary-500 outline-none" />
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left px-6 py-3 font-medium text-gray-600">Zone</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Zonal Leader</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Cells</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Members</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Present</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">Monthly</th>
-              </tr>
-            </thead>
+            <thead><tr className="bg-gray-50"><th className="text-left px-4 py-3 font-medium text-gray-600">Zone</th><th className="text-left px-3 py-3 font-medium text-gray-500">Zonal Leader</th><th className="text-center px-3 py-3 font-medium text-gray-500">Cells</th><th className="text-center px-3 py-3 font-medium text-gray-500">Members</th><th className="text-center px-3 py-3 font-medium text-gray-500">Present (Last Sun)</th><th className="text-center px-3 py-3 font-medium text-gray-500">Attendance (Range)</th><th className="text-center px-3 py-3 font-medium text-gray-500">Rate</th></tr></thead>
             <tbody>
-              {data.zones.map((zone) => (
-                <tr key={zone.id} onClick={() => setSelectedZone(zone.id)} className="border-t border-gray-100 hover:bg-gray-50 cursor-pointer transition">
-                  <td className="px-6 py-3 font-medium text-primary-700">Zone {zone.zoneNumber}</td>
-                  <td className="px-4 py-3 text-gray-600">{zone.zonalLeader}</td>
-                  <td className="px-4 py-3 text-center text-gray-800">{zone.totalCells}</td>
-                  <td className="px-4 py-3 text-center text-gray-800">{zone.totalMembers}</td>
-                  <td className="px-4 py-3 text-center text-gray-800">{zone.presentThisSunday}</td>
-                  <td className="px-4 py-3 text-center text-gray-800">{zone.attendanceThisMonth}</td>
+              {filteredZones.map((z: any) => (
+                <tr key={z.id} className="border-t border-gray-100 hover:bg-gray-50/50">
+                  <td className="px-4 py-3 font-medium text-gray-800"><a href={`/dashboard?zone=${z.id}`} className="text-primary-700 hover:underline">Zone {z.zoneNumber}</a></td>
+                  <td className="px-3 py-3 text-gray-600">{z.zonalLeader}</td>
+                  <td className="px-3 py-3 text-center font-medium text-gray-700">{z.totalCells}</td>
+                  <td className="px-3 py-3 text-center font-medium text-gray-700">{z.totalMembers}</td>
+                  <td className="px-3 py-3 text-center text-primary-700 font-medium">{z.presentThisSunday}</td>
+                  <td className="px-3 py-3 text-center text-indigo-600 font-medium">{z.attendanceInRange}</td>
+                  <td className="px-3 py-3 text-center"><span className={`px-2 py-0.5 rounded text-xs font-medium ${z.attendanceRate >= 70 ? "bg-green-100 text-green-700" : z.attendanceRate >= 40 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>{z.attendanceRate}%</span></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, icon, positive }: { label: string; value: string | number; icon: string; positive?: boolean }) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-2"><span className="text-2xl">{icon}</span></div>
-      <div className={`text-2xl font-bold ${positive !== undefined ? (positive ? "text-green-600" : "text-red-600") : "text-gray-800"}`}>{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
     </div>
   );
 }

@@ -40,6 +40,9 @@ export default function Navbar() {
             <span className="text-sm text-gray-500 hidden sm:block">
               {user?.name}
             </span>
+            <Link href="/profile" className="text-sm text-gray-500 hover:text-primary-700 transition">
+              Profile
+            </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="text-sm text-gray-500 hover:text-red-600 transition"
