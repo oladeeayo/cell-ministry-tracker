@@ -54,7 +54,7 @@ export default function OverviewDashboard({ userRole }: Props) {
           <h2 className="text-3xl font-bold">{greeting}, Pastor.</h2>
           <p className="text-primary-100 mt-2 max-w-lg">Your ministry overview for <strong>{monthName}</strong> shows healthy growth across all zones.</p>
           {stats && (
-            <div className="mt-8 grid grid-cols-3 gap-8">
+            <div className="mt-8 grid grid-cols-3 gap-8 text-center">
               <div>
                 <div className="text-xs font-bold text-primary-200 uppercase tracking-widest mb-1">Active Cells</div>
                 <div className="text-3xl font-extrabold">{stats.totalCells}</div>

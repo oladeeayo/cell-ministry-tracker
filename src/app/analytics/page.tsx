@@ -103,12 +103,10 @@ function AnalyticsContent() {
               { label: "MoM Growth", value: `${(stats.momGrowth || 0) >= 0 ? "+" : ""}${stats.momGrowth}%`, suffix: (stats.momGrowth || 0) >= 5 ? "High" : "Moderate", color: "text-teal-600" },
               { label: "Retention", value: `${Math.min(100, (stats.attendanceRate || 0) + 10)}%`, suffix: "+1.5%", color: "text-teal-600" },
             ].map((kpi, i) => (
-              <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+              <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center">
                 <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{kpi.label}</div>
-                <div className="flex items-end justify-between">
-                  <span className="text-2xl font-black text-slate-900">{kpi.value}</span>
-                  <span className={`${kpi.color} text-xs font-bold`}>{kpi.suffix}</span>
-                </div>
+                <div className="text-2xl font-black text-slate-900">{kpi.value}</div>
+                {kpi.suffix && <div className={`${kpi.color} text-xs font-bold mt-1`}>{kpi.suffix}</div>}
               </div>
             ))}
           </div>
@@ -122,11 +120,9 @@ function AnalyticsContent() {
               { label: "Avg Attendance", value: `${stats.attendanceRate || 0}%` },
               { label: "Present (Last Sun)", value: stats.presentThisSunday || 0 },
             ].map((kpi, i) => (
-              <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+              <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center">
                 <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{kpi.label}</div>
-                <div className="flex items-end justify-between">
-                  <span className="text-2xl font-black text-slate-900">{kpi.value}</span>
-                </div>
+                <div className="text-2xl font-black text-slate-900">{kpi.value}</div>
               </div>
             ))}
           </div>

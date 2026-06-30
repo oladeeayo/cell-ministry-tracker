@@ -29,15 +29,15 @@ export default function AttendanceCalendar({ data }: Props) {
     <div className="card">
       <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1 text-center">Attendance Calendar</h3>
       <p className="text-xs text-slate-400 mb-4 text-center">Sundays colored by turnout</p>
-      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-3">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
         {data.map((s) => {
           const rate = s.total > 0 ? Math.round((s.present / s.total) * 100) : 0;
           return (
-            <div key={s.date} className="flex flex-col items-center gap-1">
+            <div key={s.date} className="flex flex-col items-center gap-1 w-20 sm:w-24">
               <div className={`w-full aspect-square rounded-xl ${rateColor(s.present, s.total)} flex items-center justify-center text-white text-xs sm:text-sm font-bold`}>
                 {s.present}
               </div>
-              <span className="text-[10px] text-slate-400 truncate w-full text-center">{formatDate(s.date)}</span>
+              <span className="text-[10px] text-slate-400 text-center">{formatDate(s.date)}</span>
             </div>
           );
         })}
