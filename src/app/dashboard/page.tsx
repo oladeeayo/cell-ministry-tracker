@@ -63,12 +63,7 @@ function DashboardContent() {
   }, [drillCell, drillZone]);
 
   const user = session?.user as any;
-  if (status === "loading" || (loading && !drillCell && !drillZone)) {
-    return <LayoutWrapper pageTitle="Loading..."><div className="flex items-center justify-center py-20"><div className="text-slate-400">Loading dashboard...</div></div></LayoutWrapper>;
-  }
-  if (!user || status !== "authenticated") return null;
-  const role = user.role;
-
+  const role = user?.role;
   const isHigherRole = ["COMMUNITY_PASTOR", "DISTRICT_LEADER"].includes(role);
   const isZonalLeader = role === "ZONAL_LEADER";
   const isCellLeader = ["CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(role);
@@ -81,8 +76,10 @@ function DashboardContent() {
     return "Dashboard Overview";
   }, [drillZone, drillCell, isZonalLeader, isCellLeader]);
 
-  const zoneLoaded = drillZone || (isZonalLeader && userMeta?.zoneId);
-  const cellLoaded = (drillCell && zoneCell) || (isCellLeader && userMeta?.cells?.length > 0);
+  if (status === "loading" || (loading && !drillCell && !drillZone)) {
+    return <LayoutWrapper pageTitle="Loading..."><div className="flex items-center justify-center py-20"><div className="text-slate-400">Loading dashboard...</div></div></LayoutWrapper>;
+  }
+  if (!user || status !== "authenticated" || !role) return null;
 
   return (
     <LayoutWrapper pageTitle={pageTitle}>
