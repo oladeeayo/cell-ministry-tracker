@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 const ROLES = [
@@ -25,11 +26,18 @@ const RoleIcon = ({ name }: { name: string }) => {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [zones, setZones] = useState<any[]>([]);
   const [cells, setCells] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (status === "authenticated") router.push("/dashboard");
+  }, [status, router]);
+
+  if (status === "authenticated") return null;
 
   const [form, setForm] = useState({
     email: "", password: "", name: "", phone: "", address: "", role: "",

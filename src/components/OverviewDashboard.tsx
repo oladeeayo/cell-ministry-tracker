@@ -53,10 +53,7 @@ export default function OverviewDashboard({ userRole }: Props) {
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
               Register Member
             </Link>
-            <Link href="/dashboard?tab=analytics" className="px-5 py-2.5 bg-white/10 text-white rounded-xl font-semibold text-sm hover:bg-white/20 transition inline-flex items-center gap-2 border border-white/20">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-              View Analytics
-            </Link>
+
           </div>
         </div>
       </div>
@@ -69,47 +66,30 @@ export default function OverviewDashboard({ userRole }: Props) {
       {/* KPI Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          <div className="card-compact">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
+          {[
+            { label: "Zones", value: stats.totalZones, icon: "smile", color: "primary" },
+            { label: "Cells", value: stats.totalCells, sub: `${stats.cellsWithSubmission} submitted attendance`, icon: "zap", color: "blue" },
+            { label: "Members", value: stats.totalMembers, sub: `${stats.presentThisSunday} present this Sunday`, icon: "users", color: "amber" },
+            { label: "MoM Growth", value: `${(stats.momGrowth || 0) >= 0 ? "+" : ""}${stats.momGrowth}%`, sub: "vs previous month", icon: "trending", color: "green" },
+          ].map((kpi, i) => (
+            <div key={i} className="card-compact text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  kpi.color === "primary" ? "bg-primary-50" : kpi.color === "blue" ? "bg-blue-50" : kpi.color === "amber" ? "bg-amber-50" : "bg-green-50"
+                }`}>
+                  {kpi.icon === "smile" && <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={kpi.color === "primary" ? "#0d9488" : kpi.color === "blue" ? "#0ea5e9" : kpi.color === "amber" ? "#f59e0b" : "#10b981"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>}
+                  {kpi.icon === "zap" && <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>}
+                  {kpi.icon === "users" && <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+                  {kpi.icon === "trending" && <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>}
+                </div>
+                <p className="text-xs text-slate-500 font-medium">{kpi.label}</p>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Zones</p>
+              <p className={`text-3xl font-bold ${i === 3 ? ((stats.momGrowth || 0) >= 0 ? "text-green-600" : "text-red-500") : "text-slate-900"}`}>
+                {kpi.value}
+              </p>
+              {kpi.sub && <p className="text-xs text-slate-400 mt-1">{kpi.sub}</p>}
             </div>
-            <p className="text-3xl font-bold text-slate-900">{stats.totalZones}</p>
-          </div>
-          <div className="card-compact">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">Cells</p>
-            </div>
-            <p className="text-3xl font-bold text-slate-900">{stats.totalCells}</p>
-            <p className="text-xs text-slate-400 mt-1">{stats.cellsWithSubmission} submitted attendance</p>
-          </div>
-          <div className="card-compact">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">Members</p>
-            </div>
-            <p className="text-3xl font-bold text-slate-900">{stats.totalMembers}</p>
-            <p className="text-xs text-slate-400 mt-1">{stats.presentThisSunday} present this Sunday</p>
-          </div>
-          <div className="card-compact">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">MoM Growth</p>
-            </div>
-            <p className={`text-3xl font-bold ${(stats.momGrowth || 0) >= 0 ? "text-green-600" : "text-red-500"}`}>
-              {stats.momGrowth >= 0 ? "+" : ""}{stats.momGrowth}%
-            </p>
-            <p className="text-xs text-slate-400 mt-1">vs previous month</p>
-          </div>
+          ))}
         </div>
       )}
 

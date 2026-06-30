@@ -69,43 +69,28 @@ export default function CellDashboardView({ userRole, cells, defaultCellId }: Pr
       {/* KPI Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          <div className="card-compact">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          {[
+            { label: "Members", value: stats.memberCount || 0, color: "amber" },
+            { label: "Avg Rate", value: `${stats.attendanceRate || 0}%`, color: "blue", highlight: "text-emerald-600" },
+            { label: "Attendance", value: stats.attendanceInRange || 0, sub: "in selected range", color: "green", highlight: "text-indigo-600" },
+            { label: "Present (Last Sun)", value: stats.presentThisSunday || 0, color: "orange", highlight: "text-primary-600" },
+          ].map((kpi, i) => (
+            <div key={i} className="card-compact text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  kpi.color === "amber" ? "bg-amber-50" : kpi.color === "blue" ? "bg-blue-50" : kpi.color === "green" ? "bg-green-50" : "bg-orange-50"
+                }`}>
+                  {kpi.color === "amber" && <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+                  {kpi.color === "blue" && <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
+                  {kpi.color === "green" && <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>}
+                  {kpi.color === "orange" && <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+                </div>
+                <p className="text-xs text-slate-500 font-medium">{kpi.label}</p>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Members</p>
+              <p className={`text-3xl font-bold ${kpi.highlight || "text-slate-900"}`}>{kpi.value}</p>
+              {kpi.sub && <p className="text-xs text-slate-400 mt-1">{kpi.sub}</p>}
             </div>
-            <p className="text-3xl font-bold text-slate-900">{stats.memberCount || 0}</p>
-          </div>
-          <div className="card-compact">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">Avg Rate</p>
-            </div>
-            <p className="text-3xl font-bold text-emerald-600">{stats.attendanceRate || 0}%</p>
-          </div>
-          <div className="card-compact">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">Attendance</p>
-            </div>
-            <p className="text-3xl font-bold text-indigo-600">{stats.attendanceInRange || 0}</p>
-            <p className="text-xs text-slate-400 mt-1">in selected range</p>
-          </div>
-          <div className="card-compact">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">Present (Last Sun)</p>
-            </div>
-            <p className="text-3xl font-bold text-primary-600">{stats.presentThisSunday || 0}</p>
-          </div>
+          ))}
         </div>
       )}
 
