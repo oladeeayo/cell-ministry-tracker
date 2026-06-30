@@ -89,8 +89,8 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-50">
-              {["Name", "Phone", "Role", "Att.", "Abs.", "Actions"].map((h) => (
-                <th key={h} className="text-left px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
+              {[{ label: "Name", align: "text-left" }, { label: "Phone", align: "text-left" }, { label: "Role", align: "text-left" }, { label: "Att.", align: "text-center" }, { label: "Abs.", align: "text-center" }, { label: "Actions", align: "text-left" }].map((h) => (
+                <th key={h.label} className={`${h.align} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
               ))}
             </tr>
           </thead>
@@ -123,12 +123,12 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
                         {m.role === "MEMBER" ? "Member" : m.role === "ASST_CELL_LEADER" ? "Asst." : "E-Group"}
                       </span>
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                       <span className={`text-xs sm:text-sm font-semibold ${(m.attendanceRate || 0) >= 70 ? "text-green-600" : (m.attendanceRate || 0) >= 40 ? "text-amber-600" : "text-red-500"}`}>
                         {m.attendanceRate || 0}%
                       </span>
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                       <span className={`text-xs sm:text-sm font-semibold ${(m.consecutiveAbsences || 0) >= 3 ? "text-red-500" : "text-slate-500"}`}>
                         {m.consecutiveAbsences || 0}
                       </span>

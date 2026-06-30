@@ -51,8 +51,15 @@ export default function CellDashboardView({ userRole, cells, defaultCellId }: Pr
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
+          {stats?.cell && (
+            <p className="text-xs sm:text-sm text-primary-600 font-semibold mb-0.5">Zone {stats.cell.zone?.zoneNumber} &rsaquo; {stats.cell.name}</p>
+          )}
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">{currentCell?.name || "Cell Dashboard"}</h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Manage attendance and members</p>
+          {stats?.cell?.cellLeader && (
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Cell Leader: <span className="font-medium text-slate-700">{stats.cell.cellLeader.name}</span>
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <select

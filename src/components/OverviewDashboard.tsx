@@ -143,8 +143,8 @@ export default function OverviewDashboard({ userRole }: Props) {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50">
-                {["Zone", "Leader", "Cells", "Members", "Sunday", "Att.", "Rate"].map((h) => (
-                  <th key={h} className="text-left px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
+                {[{ label: "Zone", align: "text-left" }, { label: "Leader", align: "text-left" }, { label: "Cells", align: "text-center" }, { label: "Members", align: "text-center" }, { label: "Sunday", align: "text-center" }, { label: "Att.", align: "text-center" }, { label: "Rate", align: "text-center" }].map((h) => (
+                  <th key={h.label} className={`${h.align} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
                 ))}
               </tr>
             </thead>
@@ -155,11 +155,11 @@ export default function OverviewDashboard({ userRole }: Props) {
                     <Link href={`/dashboard?zone=${z.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">Zone {z.zoneNumber}</Link>
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{z.zonalLeader}</td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalCells}</span></td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalMembers}</span></td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-primary-600 text-xs sm:text-sm">{z.presentThisSunday}</span></td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-700 text-xs sm:text-sm">{z.attendanceInRange}</span></td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalCells}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{z.totalMembers}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-primary-600 text-xs sm:text-sm">{z.presentThisSunday}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-700 text-xs sm:text-sm">{z.attendanceInRange}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                     <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
                       z.attendanceRate >= 70 ? "badge-success" : z.attendanceRate >= 40 ? "badge-pending" : "badge-danger"
                     }`}>{z.attendanceRate}%</span>

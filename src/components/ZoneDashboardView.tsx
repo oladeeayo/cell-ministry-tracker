@@ -50,8 +50,8 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
         <div className="relative p-5 sm:p-8">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
             <div className="min-w-0">
-              <h2 className="text-xl sm:text-2xl font-bold truncate pr-4">Zone {zone.zoneNumber} — {zone.name}</h2>
-              <p className="text-primary-100 text-xs sm:text-sm mt-1 truncate">Zonal Leader: {zone.zonalLeader?.name || "N/A"}</p>
+              <h2 className="text-xl sm:text-2xl font-bold truncate pr-4">Zone {zone.zoneNumber}</h2>
+              <p className="text-primary-100 text-xs sm:text-sm mt-1 truncate">Zonal Leader: <span className="font-semibold text-white">{zone.zonalLeader?.name || "N/A"}</span></p>
             </div>
             <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={(f, t) => setDateRange({ from: f, to: t })} />
           </div>
@@ -115,8 +115,8 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50">
-                {["Cell", "Leader", "Members", "Sunday", "Att.", "Rate"].map((h) => (
-                  <th key={h} className="text-left px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
+                {[{ label: "Cell", align: "text-left" }, { label: "Leader", align: "text-left" }, { label: "Members", align: "text-center" }, { label: "Sunday", align: "text-center" }, { label: "Att.", align: "text-center" }, { label: "Rate", align: "text-center" }].map((h) => (
+                  <th key={h.label} className={`${h.align} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
                 ))}
               </tr>
             </thead>
@@ -127,10 +127,10 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
                     <Link href={`/dashboard?cell=${c.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">{c.name}</Link>
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-600 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{c.leaderName}</td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-800 text-xs sm:text-sm">{c.totalMembers}</span></td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-primary-600 text-xs sm:text-sm">{c.presentThisSunday}</span></td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4"><span className="font-medium text-slate-700 text-xs sm:text-sm">{c.attendanceInRange}</span></td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-800 text-xs sm:text-sm">{c.totalMembers}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-primary-600 text-xs sm:text-sm">{c.presentThisSunday}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center"><span className="font-medium text-slate-700 text-xs sm:text-sm">{c.attendanceInRange}</span></td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                     <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
                       c.attendanceRate >= 70 ? "badge-success" : c.attendanceRate >= 40 ? "badge-pending" : "badge-danger"
                     }`}>{c.attendanceRate}%</span>
