@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Pagination from "./Pagination";
+import MemberAttendanceModal from "./MemberAttendanceModal";
 
 interface Member {
   id: number; name: string; phone: string; role: string;
@@ -25,6 +26,7 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [attendanceMember, setAttendanceMember] = useState<{ id: number; name: string } | null>(null);
 
   const canEdit = EDIT_ROLES.includes(userRole);
   const canDelete = DELETE_ROLES.includes(userRole);
@@ -116,7 +118,11 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
                   </>
                 ) : (
                   <>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-slate-900 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none sticky left-0 z-10 bg-white sm:static sm:z-auto">{m.name}</td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 z-10 bg-white sm:static sm:z-auto">
+                      <button onClick={() => setAttendanceMember({ id: m.id, name: m.name })} className="font-semibold text-slate-900 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none hover:text-primary-600 transition text-left">
+                        {m.name}
+                      </button>
+                    </td>
                     <td className="px-3 sm:px-6 py-3 sm:py-4 text-slate-500 text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none sticky left-[120px] z-10 bg-white sm:static sm:z-auto">{m.phone || "—"}</td>
                     <td className="px-3 sm:px-6 py-3 sm:py-4">
                       <span className="px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-semibold badge-neutral whitespace-nowrap">
@@ -158,6 +164,10 @@ export default function MemberManagement({ cellId, userRole, refreshTrigger }: P
       <div className="px-4 sm:px-6 py-4 border-t border-slate-100">
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
+
+      {attendanceMember && (
+        <MemberAttendanceModal memberId={attendanceMember.id} memberName={attendanceMember.name} onClose={() => setAttendanceMember(null)} />
+      )}
     </div>
   );
 }

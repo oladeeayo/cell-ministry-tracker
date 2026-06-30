@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import MemberAttendanceModal from "./MemberAttendanceModal";
 
 interface Member {
   id: number; name: string; phone: string; role: string;
@@ -39,6 +40,7 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [attendanceMember, setAttendanceMember] = useState<{ id: number; name: string } | null>(null);
 
   const activeSunday = useMemo(() => getActiveSunday(), []);
   const canEdit = ATTENDANCE_EDITORS.includes(userRole);
@@ -142,7 +144,9 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
                   return (
                     <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
                       <td className="px-3 sm:px-6 py-3 sm:py-4 min-w-0">
-                        <p className="font-semibold text-slate-900 text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">{m.name}</p>
+                        <button onClick={() => setAttendanceMember({ id: m.id, name: m.name })} className="font-semibold text-slate-900 text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none hover:text-primary-600 transition text-left">
+                          {m.name}
+                        </button>
                         {m.phone && <p className="text-xs text-slate-400 mt-0.5 truncate max-w-[120px] sm:max-w-none">{m.phone}</p>}
                       </td>
                       <td className="px-2 sm:px-3 py-3 sm:py-4 hidden sm:table-cell">
@@ -230,6 +234,10 @@ export default function AttendanceSheet({ cellId, userRole, onAddMember }: Props
           )}
         </div>
       </div>
+
+      {attendanceMember && (
+        <MemberAttendanceModal memberId={attendanceMember.id} memberName={attendanceMember.name} onClose={() => setAttendanceMember(null)} />
+      )}
     </div>
   );
 }

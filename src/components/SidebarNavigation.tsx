@@ -22,7 +22,7 @@ interface Props {
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard", roles: ["COMMUNITY_PASTOR", "DISTRICT_LEADER", "ZONAL_LEADER", "CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"] },
   { label: "Attendance", href: "/dashboard?tab=attendance", icon: "ClipboardCheck", roles: ["CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"] },
-  { label: "Registration", href: "/register", icon: "UserPlus", roles: ["COMMUNITY_PASTOR", "DISTRICT_LEADER", "ZONAL_LEADER", "CELL_LEADER"] },
+  { label: "Add Member", href: "/register", icon: "UserPlus", roles: ["CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"] },
   { label: "Analytics", href: "/dashboard?tab=analytics", icon: "BarChart3", roles: ["COMMUNITY_PASTOR", "DISTRICT_LEADER", "ZONAL_LEADER", "CELL_LEADER"] },
 ];
 
