@@ -7,9 +7,40 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, password, name, phone, address, role, zoneData, cellData } = body;
 
-    if (!email || !password || !name || !phone || !role) {
+    if (!name || !phone || !role) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Name, phone, and role are required" },
+        { status: 400 }
+      );
+    }
+
+    // MEMBER role: just create a CellMember, no user account
+    if (role === "MEMBER") {
+      if (!cellData?.cellId) {
+        return NextResponse.json(
+          { error: "Cell selection is required" },
+          { status: 400 }
+        );
+      }
+      await prisma.cellMember.create({
+        data: {
+          name,
+          phone,
+          address: address || null,
+          role: "MEMBER",
+          cellId: parseInt(cellData.cellId),
+        },
+      });
+      return NextResponse.json(
+        { message: "Member registered successfully" },
+        { status: 201 }
+      );
+    }
+
+    // All other roles require email + password
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: "Email and password are required for this role" },
         { status: 400 }
       );
     }
@@ -58,18 +89,17 @@ export async function POST(req: Request) {
       });
     }
 
-    if (["ASST_CELL_LEADER", "E_GROUP_LEADER", "MEMBER"].includes(role) && cellData?.cellId) {
-      const memberData: any = {
-        name,
-        phone,
-        address: address || null,
-        role,
-        cellId: parseInt(cellData.cellId),
-      };
-      if (["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(role)) {
-        memberData.userId = user.id;
-      }
-      await prisma.cellMember.create({ data: memberData });
+    if (["ASST_CELL_LEADER", "E_GROUP_LEADER"].includes(role) && cellData?.cellId) {
+      await prisma.cellMember.create({
+        data: {
+          name,
+          phone,
+          address: address || null,
+          role,
+          cellId: parseInt(cellData.cellId),
+          userId: user.id,
+        },
+      });
     }
 
     return NextResponse.json(
