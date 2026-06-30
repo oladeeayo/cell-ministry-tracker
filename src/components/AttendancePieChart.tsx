@@ -19,8 +19,8 @@ export default function AttendancePieChart({ present, absent }: Props) {
 
   return (
     <div className="card">
-      <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Attendance Breakdown</h3>
-      <p className="text-xs text-slate-400 mb-2">Present vs Absent</p>
+      <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1 text-center">Attendance Breakdown</h3>
+      <p className="text-xs text-slate-400 mb-2 text-center">Present vs Absent</p>
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value" stroke="none">

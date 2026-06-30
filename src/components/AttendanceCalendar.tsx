@@ -27,8 +27,8 @@ export default function AttendanceCalendar({ data }: Props) {
 
   return (
     <div className="card">
-      <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">Attendance Calendar</h3>
-      <p className="text-xs text-slate-400 mb-4">Sundays colored by turnout</p>
+      <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1 text-center">Attendance Calendar</h3>
+      <p className="text-xs text-slate-400 mb-4 text-center">Sundays colored by turnout</p>
       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-3">
         {data.map((s) => {
           const rate = s.total > 0 ? Math.round((s.present / s.total) * 100) : 0;

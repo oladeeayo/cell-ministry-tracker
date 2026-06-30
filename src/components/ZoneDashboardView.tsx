@@ -120,7 +120,7 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
       </div>
 
       {/* Cell Table */}
-      <div className="card !p-0 overflow-hidden">
+      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
         <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">Cells ({cellStats.length})</h3>
@@ -131,15 +131,15 @@ export default function ZoneDashboardView({ zoneId, userRole }: Props) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-50">
-                {[{ label: "Cell", align: "text-left", sticky: "sticky left-0 z-10 bg-slate-50" }, { label: "Leader", align: "text-left", sticky: "sticky left-[75px] z-10 bg-slate-50" }, { label: "Members", align: "text-center", sticky: "" }, { label: "Sunday", align: "text-center", sticky: "" }, { label: "Att.", align: "text-center", sticky: "" }, { label: "Rate", align: "text-center", sticky: "" }].map((h) => (
+              <tr className="bg-slate-50/50">
+                {[{ label: "Cell", align: "text-left", sticky: "sticky left-0 z-10 bg-slate-50/50" }, { label: "Leader", align: "text-left", sticky: "sticky left-[75px] z-10 bg-slate-50/50" }, { label: "Members", align: "text-center", sticky: "" }, { label: "Sunday", align: "text-center", sticky: "" }, { label: "Att.", align: "text-center", sticky: "" }, { label: "Rate", align: "text-center", sticky: "" }].map((h) => (
                   <th key={h.label} className={`${h.align} ${h.sticky} px-3 sm:px-6 py-3 sm:py-3.5 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap`}>{h.label}</th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-50">
               {filteredCells.map((c: any) => (
-                <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition">
+                <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 z-10 bg-white sm:static sm:z-auto">
                     <Link href={`/dashboard?cell=${c.id}`} className="font-semibold text-slate-900 hover:text-primary-600 transition text-xs sm:text-sm whitespace-nowrap">{c.name}</Link>
                   </td>
