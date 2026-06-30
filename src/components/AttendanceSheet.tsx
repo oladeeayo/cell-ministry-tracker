@@ -10,8 +10,11 @@ interface Member {
   attendance: Record<string, boolean>;
 }
 
+const ATTENDANCE_EDITORS = ["CELL_LEADER", "ASST_CELL_LEADER", "E_GROUP_LEADER"];
+
 interface AttendanceSheetProps {
   cellId: number;
+  userRole: string;
   onAddMember?: () => void;
 }
 
@@ -57,7 +60,7 @@ function downloadCSV(filename: string, rows: string[][]) {
   URL.revokeObjectURL(link.href);
 }
 
-export default function AttendanceSheet({ cellId, onAddMember }: AttendanceSheetProps) {
+export default function AttendanceSheet({ cellId, userRole, onAddMember }: AttendanceSheetProps) {
   const [members, setMembers] = useState<Member[]>([]);
   const [sundays, setSundays] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +68,8 @@ export default function AttendanceSheet({ cellId, onAddMember }: AttendanceSheet
   const [saved, setSaved] = useState(false);
 
   const activeSunday = useMemo(() => getActiveSunday(), []);
-  const isActiveSundayEditable = sundays.length > 0 && sundays[sundays.length - 1] === activeSunday;
+  const canEditAttendance = ATTENDANCE_EDITORS.includes(userRole);
+  const isActiveSundayEditable = canEditAttendance && sundays.length > 0 && sundays[sundays.length - 1] === activeSunday;
 
   const pastSundays = useMemo(
     () => sundays.filter((s) => s !== activeSunday),

@@ -121,7 +121,7 @@ export default function CellDashboardView({ cellId, userRole }: { cellId: number
 
       {/* Attendance Sheet */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <AttendanceSheet cellId={cellId} onAddMember={() => setShowAddMember(true)} />
+        <AttendanceSheet cellId={cellId} userRole={userRole} onAddMember={() => setShowAddMember(true)} />
       </div>
 
       {/* Member Management */}
