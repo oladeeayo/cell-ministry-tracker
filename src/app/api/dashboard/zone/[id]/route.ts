@@ -123,6 +123,33 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       ? 100
       : 0;
 
+  // Weekly trend data (attendance per Sunday this month)
+  const sundaysThisMonth: Date[] = [];
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+    if (d.getDay() === 0) {
+      const nextWeek = new Date(d);
+      nextWeek.setDate(d.getDate() + 7);
+      if (nextWeek.getMonth() !== d.getMonth()) continue;
+      sundaysThisMonth.push(new Date(d));
+    }
+  }
+
+  const weeklyTrend = await Promise.all(
+    sundaysThisMonth.map(async (sunday) => {
+      const endOfDay = new Date(sunday);
+      endOfDay.setHours(23, 59, 59, 999);
+      const present = await prisma.attendance.count({
+        where: { cellId: { in: cellIds }, date: { gte: sunday, lte: endOfDay }, isPresent: true },
+      });
+      return {
+        date: sunday.toISOString().split("T")[0],
+        present,
+      };
+    })
+  );
+
   // Per-cell stats
   const cellStats = await Promise.all(
     zone.cells.map(async (cell) => {
@@ -156,5 +183,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       lastSundayDate: lastSunday.toISOString().split("T")[0],
     },
     cellStats,
+    weeklyTrend,
   });
 }
